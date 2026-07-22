@@ -1,6 +1,11 @@
 import { weaponConfigs } from '../src/domain/catalog';
 import { skinCatalog } from '../src/data/generated-skin-catalog';
-import { confirmGroupPick, createTournament } from '../src/domain/tournament';
+import {
+  chooseWinner,
+  confirmGroupPick,
+  confirmWildcards,
+  createTournament,
+} from '../src/domain/tournament';
 import type { TournamentState } from '../src/domain/types';
 import {
   STORAGE_KEY,
@@ -15,6 +20,43 @@ function vandalState(): TournamentState {
     weaponConfigs.vandal,
     'storage-test',
   );
+}
+
+function finishGroups(state: TournamentState): TournamentState {
+  let current = state;
+  while (current.phase === 'groups') {
+    current = confirmGroupPick(
+      current,
+      current.groups[current.groupIndex]
+        .slice(0, current.config.picksPerGroup)
+        .map((skin) => skin.id),
+    );
+  }
+  return current;
+}
+
+function sheriffKnockout(): TournamentState {
+  const initial = createTournament(
+    skinCatalog.filter((skin) => skin.weapon === 'sheriff'),
+    weaponConfigs.sheriff,
+    'storage-knockout',
+  );
+  const grouped = finishGroups(initial);
+  return confirmWildcards(
+    grouped,
+    grouped.losers.slice(0, grouped.config.wildcardSlots).map((skin) => skin.id),
+  );
+}
+
+function completedSheriff(): TournamentState {
+  let state = sheriffKnockout();
+  while (state.phase === 'knockout') {
+    state = chooseWinner(
+      state,
+      state.bracket[state.roundIndex][state.matchIndex].skins[0].id,
+    );
+  }
+  return state;
 }
 
 beforeEach(() => {
@@ -78,6 +120,52 @@ it('discards malformed compact history before undo can restore it', () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: malformed }));
 
   expect(loadTournament()).toBeNull();
+});
+
+it.each([
+  ['groups', () => {
+    const initial = vandalState();
+    return confirmGroupPick(
+      initial,
+      initial.groups[0].slice(0, 2).map((skin) => skin.id),
+    );
+  }],
+  ['revival', sheriffKnockout],
+] as const)(
+  'rejects nonzero round and match indices in %s compact history',
+  (_phase, makeState) => {
+    const state = makeState();
+    const snapshotIndex = state.history.length - 1;
+
+    for (const field of ['roundIndex', 'matchIndex'] as const) {
+      const malformed = {
+        ...state,
+        history: state.history.map((snapshot, index) =>
+          index === snapshotIndex ? { ...snapshot, [field]: 1 } : snapshot,
+        ),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: malformed }));
+      expect(loadTournament()).toBeNull();
+    }
+  },
+);
+
+it.each([
+  ['an earlier round', { roundIndex: 0 }],
+  ['an out-of-range match', { matchIndex: 999 }],
+])('rejects completed state positioned at %s', (_label, indices) => {
+  const complete = completedSheriff();
+  const malformed = { ...complete, ...indices };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: malformed }));
+
+  expect(loadTournament()).toBeNull();
+});
+
+it('restores a completed state at the final bracket position', () => {
+  const complete = completedSheriff();
+
+  expect(saveTournament(complete)).toBe(true);
+  expect(loadTournament()).toEqual(complete);
 });
 
 it('swallows storage quota and security errors so gameplay can continue', () => {

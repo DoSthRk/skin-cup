@@ -125,7 +125,9 @@ function isSnapshot(
       snapshot.groupIndex < groups.length &&
       snapshot.groupPicks.length <= picksPerGroup &&
       snapshot.groupPicks.every((id) => currentGroupIds.has(id)) &&
-      snapshot.bracket.length === 0
+      snapshot.bracket.length === 0 &&
+      snapshot.roundIndex === 0 &&
+      snapshot.matchIndex === 0
     );
   }
 
@@ -134,7 +136,11 @@ function isSnapshot(
   }
 
   if (snapshot.phase === 'revival') {
-    return snapshot.bracket.length === 0;
+    return (
+      snapshot.bracket.length === 0 &&
+      snapshot.roundIndex === 0 &&
+      snapshot.matchIndex === 0
+    );
   }
 
   return (
@@ -261,7 +267,20 @@ function isTournamentState(value: unknown): value is TournamentState {
     return value.matchIndex < value.bracket[value.roundIndex].length && value.champion === null;
   }
 
-  return value.champion !== null && value.runnerUp !== null;
+  const completeState = value as unknown as TournamentState;
+  const finalRoundIndex = completeState.bracket.length - 1;
+  const finalRound = completeState.bracket[finalRoundIndex];
+  const finalMatch = finalRound?.[0];
+
+  return (
+    completeState.champion !== null &&
+    completeState.runnerUp !== null &&
+    completeState.roundIndex === finalRoundIndex &&
+    finalRound.length === 1 &&
+    completeState.matchIndex === 0 &&
+    finalMatch.winner?.id === completeState.champion.id &&
+    finalMatch.skins.some((skin) => skin.id === completeState.runnerUp?.id)
+  );
 }
 
 export function loadTournament(): TournamentState | null {
