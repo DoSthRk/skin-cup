@@ -8,4 +8,7 @@ it('shows the three launch weapons', () => {
   expect(screen.getByRole('button', { name: /狂徒.*42/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /幻影.*36/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /正义.*24/ })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /狂徒.*42/ })).toBeDisabled();
+  expect(screen.getByRole('button', { name: /幻影.*36/ })).toBeDisabled();
+  expect(screen.getByRole('button', { name: /正义.*24/ })).toBeDisabled();
 });
