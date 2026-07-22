@@ -1,0 +1,42 @@
+:root {
+  color: #f7f1ed;
+  background: #0d0b0b;
+  font-family: system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+.weapon-launches {
+  display: grid;
+  gap: 0.75rem;
+}
+
+button {
+  min-height: 44px;
+  border: 1px solid #5f2424;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: inherit;
+  background: #281111;
+  font: inherit;
+}
