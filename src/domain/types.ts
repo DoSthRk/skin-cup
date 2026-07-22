@@ -38,3 +38,34 @@ export interface WeaponConfig {
   readonly wildcardSlots: number;
   readonly bracketSize: number;
 }
+
+export type TournamentPhase = 'groups' | 'revival' | 'knockout' | 'complete';
+
+export interface TournamentMatch {
+  readonly skins: readonly [Skin, Skin];
+  readonly winner: Skin | null;
+}
+
+export interface TournamentSnapshot {
+  readonly weapon: WeaponId;
+  readonly config: WeaponConfig;
+  readonly seed: string;
+  readonly restartCount: number;
+  readonly entrants: readonly Skin[];
+  readonly phase: TournamentPhase;
+  readonly groups: readonly (readonly Skin[])[];
+  readonly groupIndex: number;
+  readonly groupPicks: readonly string[];
+  readonly qualifiers: readonly Skin[];
+  readonly losers: readonly Skin[];
+  readonly wildcardPicks: readonly string[];
+  readonly bracket: readonly (readonly TournamentMatch[])[];
+  readonly roundIndex: number;
+  readonly matchIndex: number;
+  readonly champion: Skin | null;
+  readonly runnerUp: Skin | null;
+}
+
+export interface TournamentState extends TournamentSnapshot {
+  readonly history: readonly TournamentSnapshot[];
+}
