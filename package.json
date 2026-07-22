@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "npm run typecheck && vite build",
     "test": "vitest",
+    "sync:skins": "node scripts/sync-skin-catalog.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
