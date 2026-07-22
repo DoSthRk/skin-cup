@@ -1,9 +1,15 @@
 import { filterCatalog, weaponConfigs } from '../src/domain/catalog';
+import { filterRawCatalog } from '../scripts/skin-policy.mjs';
 import { rawSkins } from './fixtures/catalog-source';
 
 describe('filterCatalog', () => {
   it('keeps high-tier target-weapon skins with an approved effect', () => {
     expect(filterCatalog(rawSkins).map((skin) => skin.name)).toContain('合规特效 狂徒');
+  });
+
+  it('uses the build policy as the authoritative filter implementation', () => {
+    expect(filterCatalog).toBe(filterRawCatalog);
+    expect(filterCatalog(rawSkins)).toEqual(filterRawCatalog(rawSkins));
   });
 
   it('removes GO skins, low tiers, plain skins, and other weapons', () => {
