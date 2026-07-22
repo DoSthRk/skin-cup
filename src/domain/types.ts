@@ -46,7 +46,26 @@ export interface TournamentMatch {
   readonly winner: Skin | null;
 }
 
+export interface TournamentMatchSnapshot {
+  readonly skinIds: readonly [string, string];
+  readonly winnerId: string | null;
+}
+
 export interface TournamentSnapshot {
+  readonly phase: TournamentPhase;
+  readonly groupIndex: number;
+  readonly groupPicks: readonly string[];
+  readonly qualifierIds: readonly string[];
+  readonly loserIds: readonly string[];
+  readonly wildcardPicks: readonly string[];
+  readonly bracket: readonly (readonly TournamentMatchSnapshot[])[];
+  readonly roundIndex: number;
+  readonly matchIndex: number;
+  readonly championId: string | null;
+  readonly runnerUpId: string | null;
+}
+
+export interface TournamentState {
   readonly weapon: WeaponId;
   readonly config: WeaponConfig;
   readonly seed: string;
@@ -64,8 +83,5 @@ export interface TournamentSnapshot {
   readonly matchIndex: number;
   readonly champion: Skin | null;
   readonly runnerUp: Skin | null;
-}
-
-export interface TournamentState extends TournamentSnapshot {
   readonly history: readonly TournamentSnapshot[];
 }

@@ -1,6 +1,7 @@
 import type {
   Skin,
   TournamentMatch,
+  TournamentMatchSnapshot,
   TournamentPhase,
   TournamentSnapshot,
   TournamentState,
@@ -185,13 +186,31 @@ function balancedGroups(
   return groups;
 }
 
-function withoutHistory(state: TournamentState): TournamentSnapshot {
-  const { history: _history, ...snapshot } = state;
-  return snapshot;
+function compactMatch(match: TournamentMatch): TournamentMatchSnapshot {
+  return {
+    skinIds: [match.skins[0].id, match.skins[1].id],
+    winnerId: match.winner?.id ?? null,
+  };
+}
+
+function compactSnapshot(state: TournamentState): TournamentSnapshot {
+  return {
+    phase: state.phase,
+    groupIndex: state.groupIndex,
+    groupPicks: [...state.groupPicks],
+    qualifierIds: state.qualifiers.map((skin) => skin.id),
+    loserIds: state.losers.map((skin) => skin.id),
+    wildcardPicks: [...state.wildcardPicks],
+    bracket: state.bracket.map((round) => round.map(compactMatch)),
+    roundIndex: state.roundIndex,
+    matchIndex: state.matchIndex,
+    championId: state.champion?.id ?? null,
+    runnerUpId: state.runnerUp?.id ?? null,
+  };
 }
 
 function withSnapshot(state: TournamentState): readonly TournamentSnapshot[] {
-  return [...state.history, withoutHistory(state)];
+  return [...state.history, compactSnapshot(state)];
 }
 
 function assertPhase(state: TournamentState, expected: TournamentPhase): void {
@@ -421,8 +440,38 @@ export function undo(state: TournamentState): TournamentState {
     return state;
   }
 
+  const skinsById = new Map(state.entrants.map((skin) => [skin.id, skin]));
+  const skinFor = (skinId: string): Skin => {
+    const skin = skinsById.get(skinId);
+    if (!skin) {
+      throw new Error(`History references unknown skin ID: ${skinId}`);
+    }
+    return skin;
+  };
+  const optionalSkinFor = (skinId: string | null): Skin | null =>
+    skinId === null ? null : skinFor(skinId);
+  const bracket = snapshot.bracket.map((round) =>
+    round.map(
+      (match): TournamentMatch => ({
+        skins: [skinFor(match.skinIds[0]), skinFor(match.skinIds[1])],
+        winner: optionalSkinFor(match.winnerId),
+      }),
+    ),
+  );
+
   return {
-    ...snapshot,
+    ...state,
+    phase: snapshot.phase,
+    groupIndex: snapshot.groupIndex,
+    groupPicks: [...snapshot.groupPicks],
+    qualifiers: snapshot.qualifierIds.map(skinFor),
+    losers: snapshot.loserIds.map(skinFor),
+    wildcardPicks: [...snapshot.wildcardPicks],
+    bracket,
+    roundIndex: snapshot.roundIndex,
+    matchIndex: snapshot.matchIndex,
+    champion: optionalSkinFor(snapshot.championId),
+    runnerUp: optionalSkinFor(snapshot.runnerUpId),
     history: state.history.slice(0, -1),
   };
 }

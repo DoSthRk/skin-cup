@@ -251,6 +251,23 @@ describe('history and fresh starts', () => {
     expect(undoneDuel.bracket[0][0].winner).toBeNull();
   });
 
+  it('restores each exact prior state across repeated undo operations', () => {
+    const initial = createTournament(skinsFor('sheriff'), weaponConfigs.sheriff, 'repeat-undo');
+    const afterFirst = confirmGroupPick(
+      initial,
+      initial.groups[0].slice(0, 2).map((skin) => skin.id),
+    );
+    const afterSecond = confirmGroupPick(
+      afterFirst,
+      afterFirst.groups[1].slice(0, 2).map((skin) => skin.id),
+    );
+    const restored = JSON.parse(JSON.stringify(afterSecond)) as TournamentState;
+
+    expect(undo(afterSecond)).toEqual(afterFirst);
+    expect(undo(undo(afterSecond))).toEqual(initial);
+    expect(undo(restored)).toEqual(JSON.parse(JSON.stringify(afterFirst)));
+  });
+
   it('restart clears progress and history while preserving the complete entrant pool', () => {
     const initial = createTournament(skinsFor('phantom'), weaponConfigs.phantom, 'original');
     const progressed = confirmGroupPick(
@@ -269,6 +286,20 @@ describe('history and fresh starts', () => {
     expect(new Set(fresh.groups.flat().map((skin) => skin.id))).toEqual(
       new Set(initial.groups.flat().map((skin) => skin.id)),
     );
+  });
+
+  it('keeps a completed Vandal tournament safely below a 1 MiB UTF-16 payload', () => {
+    let state = startKnockout(
+      createTournament(skinsFor('vandal'), weaponConfigs.vandal, 'storage-quota'),
+    );
+
+    while (state.phase === 'knockout') {
+      const match = state.bracket[state.roundIndex][state.matchIndex];
+      state = chooseWinner(state, match.skins[0].id);
+    }
+
+    const utf16Bytes = JSON.stringify(state).length * 2;
+    expect(utf16Bytes).toBeLessThan(1024 * 1024);
   });
 });
 
