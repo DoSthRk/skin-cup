@@ -59,6 +59,17 @@ function completedSheriff(): TournamentState {
   return state;
 }
 
+function sheriffSecondRound(): TournamentState {
+  let state = sheriffKnockout();
+  while (state.phase === 'knockout' && state.roundIndex === 0) {
+    state = chooseWinner(
+      state,
+      state.bracket[state.roundIndex][state.matchIndex].skins[0].id,
+    );
+  }
+  return state;
+}
+
 beforeEach(() => {
   localStorage.clear();
   vi.restoreAllMocks();
@@ -166,6 +177,82 @@ it('restores a completed state at the final bracket position', () => {
 
   expect(saveTournament(complete)).toBe(true);
   expect(loadTournament()).toEqual(complete);
+});
+
+it.each([
+  ['groups', vandalState],
+  ['revival', () => finishGroups(vandalState())],
+] as const)(
+  'rejects nonzero round and match indices in current %s state',
+  (_phase, makeState) => {
+    const state = makeState();
+
+    for (const field of ['roundIndex', 'matchIndex'] as const) {
+      for (const invalidIndex of [1, 999]) {
+        const malformed = { ...state, [field]: invalidIndex };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: malformed }));
+        expect(loadTournament()).toBeNull();
+      }
+    }
+  },
+);
+
+it('rejects a current knockout index outside the latest unresolved position', () => {
+  const secondRound = sheriffSecondRound();
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ version: 1, state: { ...secondRound, roundIndex: 0, matchIndex: 0 } }),
+  );
+  expect(loadTournament()).toBeNull();
+
+  const afterOneMatch = chooseWinner(
+    secondRound,
+    secondRound.bracket[secondRound.roundIndex][secondRound.matchIndex].skins[0].id,
+  );
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ version: 1, state: { ...afterOneMatch, matchIndex: 0 } }),
+  );
+  expect(loadTournament()).toBeNull();
+});
+
+it('rejects compact knockout history that points outside its latest round', () => {
+  const secondRound = sheriffSecondRound();
+  const afterOneMatch = chooseWinner(
+    secondRound,
+    secondRound.bracket[secondRound.roundIndex][secondRound.matchIndex].skins[0].id,
+  );
+  const snapshotIndex = afterOneMatch.history.length - 1;
+  const malformed = {
+    ...afterOneMatch,
+    history: afterOneMatch.history.map((snapshot, index) =>
+      index === snapshotIndex ? { ...snapshot, roundIndex: 0, matchIndex: 0 } : snapshot,
+    ),
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: malformed }));
+
+  expect(loadTournament()).toBeNull();
+});
+
+it('rejects unreachable complete-phase compact history', () => {
+  const state = sheriffSecondRound();
+  const snapshotIndex = state.history.length - 1;
+  const malformed = {
+    ...state,
+    history: state.history.map((snapshot, index) =>
+      index === snapshotIndex
+        ? {
+            ...snapshot,
+            phase: 'complete' as const,
+            championId: state.entrants[0].id,
+            runnerUpId: state.entrants[1].id,
+          }
+        : snapshot,
+    ),
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: malformed }));
+
+  expect(loadTournament()).toBeNull();
 });
 
 it('swallows storage quota and security errors so gameplay can continue', () => {

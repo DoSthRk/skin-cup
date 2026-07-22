@@ -143,10 +143,17 @@ function isSnapshot(
     );
   }
 
+  if (snapshot.phase === 'complete') {
+    return false;
+  }
+
+  const currentRound = snapshot.bracket[snapshot.roundIndex];
   return (
     snapshot.bracket.length > 0 &&
-    snapshot.roundIndex < snapshot.bracket.length &&
-    snapshot.matchIndex < snapshot.bracket[snapshot.roundIndex].length
+    snapshot.roundIndex === snapshot.bracket.length - 1 &&
+    snapshot.matchIndex < currentRound.length &&
+    currentRound.slice(0, snapshot.matchIndex).every((match) => match.winnerId !== null) &&
+    currentRound.slice(snapshot.matchIndex).every((match) => match.winnerId === null)
   );
 }
 
@@ -247,6 +254,8 @@ function isTournamentState(value: unknown): value is TournamentState {
       value.groupPicks.length <= currentConfig.picksPerGroup &&
       value.groupPicks.every((id) => currentGroupIds.has(id)) &&
       value.bracket.length === 0 &&
+      value.roundIndex === 0 &&
+      value.matchIndex === 0 &&
       value.champion === null
     );
   }
@@ -256,7 +265,12 @@ function isTournamentState(value: unknown): value is TournamentState {
   }
 
   if (value.phase === 'revival') {
-    return value.bracket.length === 0 && value.champion === null;
+    return (
+      value.bracket.length === 0 &&
+      value.roundIndex === 0 &&
+      value.matchIndex === 0 &&
+      value.champion === null
+    );
   }
 
   if (value.bracket.length === 0 || value.roundIndex >= value.bracket.length) {
@@ -264,7 +278,19 @@ function isTournamentState(value: unknown): value is TournamentState {
   }
 
   if (value.phase === 'knockout') {
-    return value.matchIndex < value.bracket[value.roundIndex].length && value.champion === null;
+    const knockoutState = value as unknown as TournamentState;
+    const currentRound = knockoutState.bracket[knockoutState.roundIndex];
+    return (
+      knockoutState.roundIndex === knockoutState.bracket.length - 1 &&
+      knockoutState.matchIndex < currentRound.length &&
+      currentRound
+        .slice(0, knockoutState.matchIndex)
+        .every((match) => match.winner !== null) &&
+      currentRound
+        .slice(knockoutState.matchIndex)
+        .every((match) => match.winner === null) &&
+      knockoutState.champion === null
+    );
   }
 
   const completeState = value as unknown as TournamentState;
