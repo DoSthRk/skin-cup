@@ -2,7 +2,9 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import meleeSelection from '../docs/superpowers/specs/2026-07-23-melee-selection.json';
 import { syncSkinCatalog } from '../scripts/sync-skin-catalog.mjs';
+import { skinCatalog } from '../src/data/generated-skin-catalog';
 
 function response(payload: unknown) {
   return {
@@ -13,6 +15,18 @@ function response(payload: unknown) {
 }
 
 describe('syncSkinCatalog', () => {
+  it('keeps the committed 118-skin melee selection in the generated catalog', () => {
+    const generatedMeleeIds = skinCatalog
+      .filter((skin) => skin.weapon === 'melee')
+      .map((skin) => skin.id);
+
+    expect(new Set(meleeSelection.selected_ids).size).toBe(118);
+    expect(generatedMeleeIds).toHaveLength(118);
+    expect(new Set(generatedMeleeIds)).toEqual(
+      new Set(meleeSelection.selected_ids),
+    );
+  });
+
   it('accepts Valorant API UUID formats before checking catalog counts', async () => {
     const weaponUuid = '9c82e19d-4575-0200-1a81-3eacf00cf872';
     const tierUuid = '60bca009-4182-7998-dee7-b8a2558dc369';

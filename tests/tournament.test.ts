@@ -26,6 +26,22 @@ function groupIds(state: TournamentState): string[][] {
   return state.groups.map((group) => group.map((skin) => skin.id));
 }
 
+function syntheticMeleeSkins(): Skin[] {
+  return Array.from(
+    { length: weaponConfigs.melee.expectedCount },
+    (_, index): Skin => ({
+      id: `00000000-0000-4000-8000-${index.toString().padStart(12, '0')}`,
+      name: `近战测试皮肤 ${index + 1}`,
+      weapon: 'melee',
+      tier: '传奇',
+      tierRank: 3,
+      effects: [],
+      image: null,
+      fullRender: null,
+    }),
+  );
+}
+
 function finishAllGroups(state: TournamentState): TournamentState {
   let current = state;
 
@@ -108,6 +124,58 @@ describe('deterministic balanced seeding', () => {
       );
       expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe('melee tournament without revival', () => {
+  it('conserves all 118 entrants and enters a 64-skin bracket after the final group', () => {
+    const entrants = syntheticMeleeSkins();
+    const initial = createTournament(entrants, weaponConfigs.melee, 'melee-direct');
+    const groupSizes = initial.groups.map((group) => group.length);
+
+    expect(initial.groups).toHaveLength(32);
+    expect(groupSizes.filter((size) => size === 4)).toHaveLength(22);
+    expect(groupSizes.filter((size) => size === 3)).toHaveLength(10);
+    expect(new Set(initial.groups.flat().map((skin) => skin.id)).size).toBe(118);
+
+    const knockout = finishAllGroups(initial);
+    const firstRoundEntrants = knockout.bracket[0].flatMap((match) => match.skins);
+
+    expect(knockout.phase).toBe('knockout');
+    expect(knockout.qualifiers).toHaveLength(64);
+    expect(knockout.bracket[0]).toHaveLength(32);
+    expect(new Set(firstRoundEntrants.map((skin) => skin.id)).size).toBe(64);
+  });
+
+  it('reports monotonic progress without reserving a revival action', () => {
+    let state = createTournament(
+      syntheticMeleeSkins(),
+      weaponConfigs.melee,
+      'melee-progress',
+    );
+    const values = [progress(state)];
+
+    while (state.phase === 'groups') {
+      state = confirmGroupPick(
+        state,
+        state.groups[state.groupIndex]
+          .slice(0, state.config.picksPerGroup)
+          .map((skin) => skin.id),
+      );
+      values.push(progress(state));
+    }
+
+    while (state.phase === 'knockout') {
+      const match = state.bracket[state.roundIndex][state.matchIndex];
+      state = chooseWinner(state, match.skins[0].id);
+      values.push(progress(state));
+    }
+
+    expect(values[0]).toBe(0);
+    expect(values.at(-1)).toBe(1);
+    expect(values.every((value, index) => index === 0 || value > values[index - 1])).toBe(
+      true,
+    );
   });
 });
 

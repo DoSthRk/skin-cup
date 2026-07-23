@@ -1,8 +1,13 @@
+import meleeSelection from '../docs/superpowers/specs/2026-07-23-melee-selection.json' with { type: 'json' };
+
 export const weaponIds = {
   狂徒: 'vandal',
   幻影: 'phantom',
   正义: 'sheriff',
+  近战武器: 'melee',
 };
+
+export const approvedMeleeSkinIds = new Set(meleeSelection.selected_ids);
 
 export const allowedEffectItems = new Set([
   'VFX',
@@ -62,6 +67,17 @@ export const weaponConfigs = {
     wildcardSlots: 4,
     bracketSize: 16,
   },
+  melee: {
+    label: '近战武器',
+    expectedCount: 118,
+    groupSizes: Array.from(
+      { length: 32 },
+      (_, index) => (index < 30 && index % 3 === 2 ? 3 : 4),
+    ),
+    picksPerGroup: 2,
+    wildcardSlots: 0,
+    bracketSize: 64,
+  },
 };
 
 const goSkinPattern = /无畏契约\s*GO|VALORANT\s*GO/i;
@@ -90,13 +106,16 @@ export function filterRawCatalog(rawSkins) {
     const weapon = weaponIds[rawSkin.weapon];
     const effects = approvedEffects(rawSkin.levels);
     const isApprovedSpecial = approvedSpecialSkinNames.has(rawSkin.name);
+    const isApprovedMelee =
+      weapon === 'melee' && approvedMeleeSkinIds.has(rawSkin.id);
 
     if (
       !weapon ||
       rawSkin.tierRank < 2 ||
       goSkinPattern.test(rawSkin.name) ||
       rejectedSkinNames.has(rawSkin.name) ||
-      (!isApprovedSpecial && effects.length === 0)
+      (weapon === 'melee' && !isApprovedMelee) ||
+      (weapon !== 'melee' && !isApprovedSpecial && effects.length === 0)
     ) {
       continue;
     }

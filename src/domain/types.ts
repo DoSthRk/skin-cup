@@ -1,6 +1,6 @@
-export type WeaponId = 'vandal' | 'phantom' | 'sheriff';
+export type WeaponId = 'vandal' | 'phantom' | 'sheriff' | 'melee';
 
-export type WeaponLabel = '狂徒' | '幻影' | '正义';
+export type WeaponLabel = '狂徒' | '幻影' | '正义' | '近战武器';
 
 export type TierRank = number;
 

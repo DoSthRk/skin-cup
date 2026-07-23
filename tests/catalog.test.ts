@@ -1,5 +1,6 @@
 import { filterCatalog, weaponConfigs } from '../src/domain/catalog';
 import { filterRawCatalog } from '../scripts/skin-policy.mjs';
+import meleeSelection from '../docs/superpowers/specs/2026-07-23-melee-selection.json';
 import { rawSkins } from './fixtures/catalog-source';
 
 describe('filterCatalog', () => {
@@ -52,6 +53,15 @@ describe('filterCatalog', () => {
     }
   });
 
+  it('uses the exact curated melee UUID snapshot', () => {
+    const names = filterCatalog(rawSkins).map((skin) => skin.name);
+
+    expect(meleeSelection.selected_ids).toHaveLength(118);
+    expect(new Set(meleeSelection.selected_ids).size).toBe(118);
+    expect(names).toContain('紫金爪刀');
+    expect(names).not.toContain('未批准特效近战');
+  });
+
   it('exposes the configured bracket capacities', () => {
     expect(weaponConfigs).toEqual({
       vandal: {
@@ -77,6 +87,17 @@ describe('filterCatalog', () => {
         picksPerGroup: 2,
         wildcardSlots: 4,
         bracketSize: 16,
+      },
+      melee: {
+        label: '近战武器',
+        expectedCount: 118,
+        groupSizes: Array.from(
+          { length: 32 },
+          (_, index) => (index < 30 && index % 3 === 2 ? 3 : 4),
+        ),
+        picksPerGroup: 2,
+        wildcardSlots: 0,
+        bracketSize: 64,
       },
     });
   });

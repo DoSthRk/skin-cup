@@ -21,7 +21,7 @@ import {
 import type { TournamentState, WeaponId } from './domain/types';
 import { clearTournament, loadTournament, saveTournament } from './lib/storage';
 
-const weaponOrder: readonly WeaponId[] = ['vandal', 'phantom', 'sheriff'];
+const weaponOrder: readonly WeaponId[] = ['vandal', 'phantom', 'sheriff', 'melee'];
 const weaponOptions = weaponOrder.map((id) => ({
   id,
   label: weaponConfigs[id].label,

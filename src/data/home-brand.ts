@@ -18,4 +18,8 @@ export const weaponCardArtwork: Readonly<Record<WeaponId, WeaponCardArtwork>> = 
     src: '/weapon-cards/sheriff-singularity.png',
     skinName: '奇点 正义',
   },
+  melee: {
+    src: '/weapon-cards/melee-prime-karambit.png',
+    skinName: '紫金爪刀',
+  },
 };

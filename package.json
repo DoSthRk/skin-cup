@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run typecheck && vite build && node scripts/prepare-sites-build.mjs",
+    "build": "npm run typecheck && vite build",
     "test": "vitest",
     "sync:skins": "node scripts/sync-skin-catalog.mjs",
     "typecheck": "tsc --noEmit"

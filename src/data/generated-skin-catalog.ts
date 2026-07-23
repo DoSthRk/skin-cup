@@ -3,6 +3,1382 @@ import type { Skin } from '../domain/types';
 
 export const skinCatalog = [
   {
+    "id": "1ea64c8d-43c4-fce8-7354-01bdd6c0ee17",
+    "name": "2021全球冠军赛 爪刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/1ea64c8d-43c4-fce8-7354-01bdd6c0ee17/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/62926dfc-4ffb-c65e-dd4b-8b96b6deee77/fullrender.png"
+  },
+  {
+    "id": "6946cd0e-4e4a-ec4f-9238-dfb71715722b",
+    "name": "2022全球冠军赛 蝴蝶刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/6946cd0e-4e4a-ec4f-9238-dfb71715722b/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/579c78dc-405e-8e01-949f-d6afb4fb1bc3/fullrender.png"
+  },
+  {
+    "id": "27f27500-491c-32d4-1db6-1f85e479c103",
+    "name": "2023全球冠军赛 苦无",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/27f27500-491c-32d4-1db6-1f85e479c103/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/13efd2df-4efe-5f22-7558-45894486df06/fullrender.png"
+  },
+  {
+    "id": "30300aea-4d8a-320d-5cb0-0e8badc8d3df",
+    "name": "2024全球冠军赛 战刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/30300aea-4d8a-320d-5cb0-0e8badc8d3df/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/e414be02-4af4-10e9-2589-1daae7087208/fullrender.png"
+  },
+  {
+    "id": "d901cc46-43c7-ebe8-9c5a-f7963f1a4db3",
+    "name": "2025全球冠军赛 蝴蝶刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/d901cc46-43c7-ebe8-9c5a-f7963f1a4db3/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/471b294d-41ec-93c8-d470-af87fcabd94f/fullrender.png"
+  },
+  {
+    "id": "a8250e8b-4176-e056-af5a-80b47e4b4e31",
+    "name": "5周年//公测重制版 苍龙之刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a8250e8b-4176-e056-af5a-80b47e4b4e31/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/fcb2bc0a-4b21-c592-f148-b2983cfc08a9/fullrender.png"
+  },
+  {
+    "id": "fcf7417a-4b58-b09d-c557-6185acaf7425",
+    "name": "埃芒迪尔大剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/fcf7417a-4b58-b09d-c557-6185acaf7425/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/31d77d54-4905-d3b9-7a05-4f95a2da1751/fullrender.png"
+  },
+  {
+    "id": "ccc98dd6-4957-ee80-1489-c5889d128261",
+    "name": "艾沃莉的魔法棒",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/ccc98dd6-4957-ee80-1489-c5889d128261/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/bda3227c-4b50-20ea-9552-72bda27338ee/fullrender.png"
+  },
+  {
+    "id": "206fc3fe-45a0-6c19-c367-229b98b6a2aa",
+    "name": "般若长牙",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/206fc3fe-45a0-6c19-c367-229b98b6a2aa/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/94bf2d2a-4f1b-b68e-0de1-f2ac152d1127/fullrender.png"
+  },
+  {
+    "id": "feb4eb97-4ab3-793a-9a92-1b8af59dc023",
+    "name": "冰点凝冻 动力锤",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/feb4eb97-4ab3-793a-9a92-1b8af59dc023/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/e69672d4-4e5f-4ff8-e7ca-ad97ed343241/fullrender.png"
+  },
+  {
+    "id": "c5482640-4652-6948-29c6-769e8198db27",
+    "name": "剥皮小刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/c5482640-4652-6948-29c6-769e8198db27/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/37714c64-482b-d68d-f704-139156a2577c/fullrender.png"
+  },
+  {
+    "id": "116f4f55-48c1-e7de-de37-c8a7a5906765",
+    "name": "彩虹魔力大棒槌",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/116f4f55-48c1-e7de-de37-c8a7a5906765/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ea931013-467b-490d-2ea6-4f97c6ab1e2d/fullrender.png"
+  },
+  {
+    "id": "246c06ba-42bf-4b8f-8680-2ba903e45129",
+    "name": "超时空卫队 三棱军刺",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/246c06ba-42bf-4b8f-8680-2ba903e45129/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/25952a77-4e3e-a466-4161-54824d69ad69/fullrender.png"
+  },
+  {
+    "id": "2e4300f9-49b3-6bbe-af7c-94a6f56ff12e",
+    "name": "澄湖潋滟",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/2e4300f9-49b3-6bbe-af7c-94a6f56ff12e/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/2733ffb9-4285-f7cf-e01e-dbb9314f3a96/fullrender.png"
+  },
+  {
+    "id": "24cf2882-48c7-f287-155a-a4b6b083baa4",
+    "name": "虫巢心智 短剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/24cf2882-48c7-f287-155a-a4b6b083baa4/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/e276db7c-4cab-3215-2b83-c483b8b9139d/fullrender.png"
+  },
+  {
+    "id": "9b6d0e3d-43eb-e9d5-4069-2194e02d6e6e",
+    "name": "穿花蝴蝶",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/9b6d0e3d-43eb-e9d5-4069-2194e02d6e6e/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/f5851647-448e-a209-915f-4597df528522/fullrender.png"
+  },
+  {
+    "id": "4670c2c9-4445-1604-7000-fd99093b3504",
+    "name": "船长铁钩",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/4670c2c9-4445-1604-7000-fd99093b3504/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/5b39dcc3-419a-6cef-9f31-b4b91dba0bae/fullrender.png"
+  },
+  {
+    "id": "62a52d27-4c08-104c-3bd0-22be86848cc3",
+    "name": "定海神珍",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/62a52d27-4c08-104c-3bd0-22be86848cc3/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/93fd066c-4e5c-16a8-d58f-f692df683a99/fullrender.png"
+  },
+  {
+    "id": "e49c0fd2-435c-2c41-9164-4996080f455b",
+    "name": "冬季仙境 糖果棒",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/e49c0fd2-435c-2c41-9164-4996080f455b/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/cf790c7c-42d7-23ee-69da-ebaccffac718/fullrender.png"
+  },
+  {
+    "id": "32d438ff-4d88-c9d1-8760-38ba881eb138",
+    "name": "嘟昂嘟昂超弹力水球拳套",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/32d438ff-4d88-c9d1-8760-38ba881eb138/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/5a81f28d-4221-3aaa-f230-8f9cbc2fc3e4/fullrender.png"
+  },
+  {
+    "id": "d74e3401-4996-7334-55b6-80a504375b7a",
+    "name": "多弥尔之裁",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/d74e3401-4996-7334-55b6-80a504375b7a/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/83272460-40e1-a592-2c4b-dcb5509e9ccc/fullrender.png"
+  },
+  {
+    "id": "ed792f00-43a7-cc88-b64b-b78c9de399a1",
+    "name": "堕天遗武 仪式匕首",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/ed792f00-43a7-cc88-b64b-b78c9de399a1/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/30e034a5-41dc-f639-e513-ce95af4a0474/fullrender.png"
+  },
+  {
+    "id": "c18e781e-40a0-80e6-256a-54ae7355e7eb",
+    "name": "放电尖刺",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/c18e781e-40a0-80e6-256a-54ae7355e7eb/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ba3e92f9-46a4-744f-b06d-12a37910d80b/fullrender.png"
+  },
+  {
+    "id": "9ccde738-4d26-44e3-189e-ddaebb95e64e",
+    "name": "废土//2.0 撬棍",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/9ccde738-4d26-44e3-189e-ddaebb95e64e/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/4da3193d-4884-7a53-aa04-14878acd4546/fullrender.png"
+  },
+  {
+    "id": "a179674b-4069-ea5f-b86d-1f8aa15f8d74",
+    "name": "焚月镰刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a179674b-4069-ea5f-b86d-1f8aa15f8d74/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/48134e52-4636-67af-fe0b-46a971485efc/fullrender.png"
+  },
+  {
+    "id": "0357caf1-41a9-cb1c-c080-38aab13d9a7e",
+    "name": "辐爆之杖",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/0357caf1-41a9-cb1c-c080-38aab13d9a7e/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/d5aa2665-4381-e982-4fd7-6ab0c2ce920b/fullrender.png"
+  },
+  {
+    "id": "f91a1dd8-4f5f-bce4-f01d-4da95322c485",
+    "name": "盖亚之怒",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/f91a1dd8-4f5f-bce4-f01d-4da95322c485/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/f3de1f8b-471f-cd60-9c42-d59a8ef93a3c/fullrender.png"
+  },
+  {
+    "id": "4fc1bb49-4847-7262-8cfe-fcaf0f62f0d1",
+    "name": "盖亚之愠",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/4fc1bb49-4847-7262-8cfe-fcaf0f62f0d1/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/488b19bd-497f-81c8-6155-8b870e5dfd1a/fullrender.png"
+  },
+  {
+    "id": "4ef258bb-49bf-74c5-3405-16a041cb7306",
+    "name": "钢轨卫士 战锤",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/4ef258bb-49bf-74c5-3405-16a041cb7306/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/da1b864e-48f9-bb1e-0cce-24b047713af5/fullrender.png"
+  },
+  {
+    "id": "5844ccd5-4a8d-e84d-b5b1-dfaaa8f34d84",
+    "name": "高分子科技涂层军刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/5844ccd5-4a8d-e84d-b5b1-dfaaa8f34d84/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/4805ee17-4f88-b9b7-b009-8c9986bee2f3/fullrender.png"
+  },
+  {
+    "id": "239ed20b-479c-e08e-c4b5-6ba0394576d4",
+    "name": "个人近战单位",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX",
+      "Voiceover"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/239ed20b-479c-e08e-c4b5-6ba0394576d4/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/555d0161-4ed0-45a8-c829-fea356bc8f96/fullrender.png"
+  },
+  {
+    "id": "1f81e40e-460a-75fd-fb38-5f90b6fbb596",
+    "name": "铬金引擎 拳剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/1f81e40e-460a-75fd-fb38-5f90b6fbb596/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/153e56f6-458c-e97f-5a11-f2abdf5bfb93/fullrender.png"
+  },
+  {
+    "id": "a516af9d-4f3d-ac79-2204-329f732aa378",
+    "name": "光荣异象 歧途",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a516af9d-4f3d-ac79-2204-329f732aa378/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/5183570c-4c8d-7b5d-00c3-a0ae04518da6/fullrender.png"
+  },
+  {
+    "id": "4e7342a5-4820-2d79-a488-0fa51a4357f7",
+    "name": "鬼丸国纲",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "SoundEffects"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/4e7342a5-4820-2d79-a488-0fa51a4357f7/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/4543974c-4eaa-936d-271f-cbb3a03ced59/fullrender.png"
+  },
+  {
+    "id": "c3f1c9d6-441b-7def-1bf2-2c82719a4de8",
+    "name": "海星锚",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/c3f1c9d6-441b-7def-1bf2-2c82719a4de8/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/e6d3f9c9-4b20-881d-c990-0b97b49a3fd8/fullrender.png"
+  },
+  {
+    "id": "093e3c69-4e14-6f75-1ee4-fc92efb91f9a",
+    "name": "合金战车 军刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/093e3c69-4e14-6f75-1ee4-fc92efb91f9a/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/66d057a7-4681-bd8b-ecbc-258573e6fd0a/fullrender.png"
+  },
+  {
+    "id": "e37229ed-4ddf-5e7e-e744-8fba60fa2c37",
+    "name": "黑波之刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/e37229ed-4ddf-5e7e-e744-8fba60fa2c37/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/31a9b6a5-4c0b-f7bc-f2a6-a8b5eeffb898/fullrender.png"
+  },
+  {
+    "id": "3e633a9a-482a-30fb-90da-059ff6cd400b",
+    "name": "洪荒双斩",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/3e633a9a-482a-30fb-90da-059ff6cd400b/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/94b0b6f2-49cc-ecb8-57b1-f2a00470d554/fullrender.png"
+  },
+  {
+    "id": "59f627f1-42f3-670d-5323-3499c2913289",
+    "name": "弧光拳刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/59f627f1-42f3-670d-5323-3499c2913289/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/d728f2cf-46c1-1084-f3d3-1c86f61f5875/fullrender.png"
+  },
+  {
+    "id": "5724cd18-458b-af3d-b60a-239c5a8c081a",
+    "name": "祜刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/5724cd18-458b-af3d-b60a-239c5a8c081a/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/73190072-4d75-df43-9906-27b5dbad3d88/fullrender.png"
+  },
+  {
+    "id": "a9dc6008-4efd-6908-f937-719303898d51",
+    "name": "毁灭战斧",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a9dc6008-4efd-6908-f937-719303898d51/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ac36e55b-45c9-8537-d284-4eada0024d36/fullrender.png"
+  },
+  {
+    "id": "6e0496c1-4c98-7abe-16c4-7ca3653e5cd8",
+    "name": "混沌大剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/6e0496c1-4c98-7abe-16c4-7ca3653e5cd8/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/54417551-4a5d-9b90-35dc-a28b93feb50b/fullrender.png"
+  },
+  {
+    "id": "bc19e1d3-40cb-04dd-1939-fb9edb8fd55f",
+    "name": "混沌链枷",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/bc19e1d3-40cb-04dd-1939-fb9edb8fd55f/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/b5106b95-455d-d893-72b9-67b2bd840ff6/fullrender.png"
+  },
+  {
+    "id": "6bea8564-48a8-5011-dbf7-a2856713de08",
+    "name": "机动狂飙 战刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/6bea8564-48a8-5011-dbf7-a2856713de08/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/559f6638-426d-8c57-7a0d-158dd339fc70/fullrender.png"
+  },
+  {
+    "id": "a5f8a5c8-4af6-620d-4834-46a14ea50162",
+    "name": "极简主义//2.0 爪刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/a5f8a5c8-4af6-620d-4834-46a14ea50162/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/a5eb153c-4c90-fed1-1020-43b461a0c71e/fullrender.png"
+  },
+  {
+    "id": "f0ba8044-4964-ba1f-7f0f-e68dc2118d42",
+    "name": "街机高手",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/f0ba8044-4964-ba1f-7f0f-e68dc2118d42/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/9edfec92-43c6-fd03-4456-64b816db778c/fullrender.png"
+  },
+  {
+    "id": "7d45aaad-4ac9-77b1-e7ca-3991be5721dd",
+    "name": "金角扇",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/7d45aaad-4ac9-77b1-e7ca-3991be5721dd/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/beaac174-44a6-0ee8-4607-939405782cae/fullrender.png"
+  },
+  {
+    "id": "e100dff1-4cf5-54ec-aa65-6fadbc22973b",
+    "name": "金琅斧",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/e100dff1-4cf5-54ec-aa65-6fadbc22973b/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/d2e296d9-448e-c58f-2229-14a481906686/fullrender.png"
+  },
+  {
+    "id": "fa0972de-4868-1679-4a3e-7bb357f7f281",
+    "name": "荆刺链刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/fa0972de-4868-1679-4a3e-7bb357f7f281/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/e57becd4-4580-d8ca-1391-95815f421d94/fullrender.png"
+  },
+  {
+    "id": "d78eef32-4531-0f68-f2d2-d28c52ecea38",
+    "name": "巨神铁甲 短剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/d78eef32-4531-0f68-f2d2-d28c52ecea38/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ee9cf8f6-4b9a-7997-e3b3-c48f4eb5bf30/fullrender.png"
+  },
+  {
+    "id": "8e760310-4d95-354b-a910-049eaa4d2fc6",
+    "name": "刻骨铭心",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/8e760310-4d95-354b-a910-049eaa4d2fc6/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/95d2e7aa-4121-9db5-8a9a-54a0c18410d8/fullrender.png"
+  },
+  {
+    "id": "c91e4850-4d32-3b12-f411-3e9f644ea616",
+    "name": "狂切",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/c91e4850-4d32-3b12-f411-3e9f644ea616/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/2e59d7f8-4932-8196-77c0-c182fb0dc259/fullrender.png"
+  },
+  {
+    "id": "835a8c05-4e36-1b80-3ad4-c283697ba147",
+    "name": "镭切",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/835a8c05-4e36-1b80-3ad4-c283697ba147/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/227d5b20-49dd-b80c-3ba0-b7b27f5f2d0e/fullrender.png"
+  },
+  {
+    "id": "1cd09fbd-43cb-a5f6-90fa-08994342d747",
+    "name": "离火刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/1cd09fbd-43cb-a5f6-90fa-08994342d747/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/dbf9de3d-4cb7-4dc3-1ed1-94bddd1d07f0/fullrender.png"
+  },
+  {
+    "id": "46664f5b-49ca-3e09-4fe5-56bdef536335",
+    "name": "离子武器 能量剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/46664f5b-49ca-3e09-4fe5-56bdef536335/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/066f353c-42d9-3020-f11b-78b6eb29fdb8/fullrender.png"
+  },
+  {
+    "id": "a590c03a-43b1-a408-4c6b-0bb9fdda1570",
+    "name": "离子武器//2.0 爪刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a590c03a-43b1-a408-4c6b-0bb9fdda1570/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/43f1a063-47e7-fb46-7949-87a89a982afb/fullrender.png"
+  },
+  {
+    "id": "dfe96f5a-4be0-c3f4-8e31-7f962bca2ade",
+    "name": "灵魂冲击 镰刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/dfe96f5a-4be0-c3f4-8e31-7f962bca2ade/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/252c202e-4f8f-c064-8059-0ea0c851cc3c/fullrender.png"
+  },
+  {
+    "id": "a0d4ac37-416b-ae62-aa36-48803714e25f",
+    "name": "流风回雪",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a0d4ac37-416b-ae62-aa36-48803714e25f/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/81931c67-4c80-6dbb-7832-759d5b193b25/fullrender.png"
+  },
+  {
+    "id": "94b40026-4efb-39ea-69d7-fca60be39c56",
+    "name": "龙爪",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/94b40026-4efb-39ea-69d7-fca60be39c56/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/d74171bf-4f3a-7dd7-76b9-04afeaeb72c0/fullrender.png"
+  },
+  {
+    "id": "d0873346-4e42-238e-0251-a399eff11f2f",
+    "name": "泷吟",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/d0873346-4e42-238e-0251-a399eff11f2f/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/4fb8aaea-434f-03e6-8757-808de73c0d48/fullrender.png"
+  },
+  {
+    "id": "516e0013-480b-6c1f-b05a-b6b616bffbfc",
+    "name": "落英飞旋",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/516e0013-480b-6c1f-b05a-b6b616bffbfc/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/395821e4-4938-f71e-486f-b6b0087a2c13/fullrender.png"
+  },
+  {
+    "id": "846e2477-46bf-a583-0d35-8db82054e53a",
+    "name": "脉冲焰矩",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/846e2477-46bf-a583-0d35-8db82054e53a/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/53490399-4ef4-dc9f-9d4f-fab8d00ab697/fullrender.png"
+  },
+  {
+    "id": "a4c41553-4ba5-efee-5685-7a9f0cdf7878",
+    "name": "迷邃星云 军刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/a4c41553-4ba5-efee-5685-7a9f0cdf7878/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/82988b47-4439-3b28-cbbe-899d381b291e/fullrender.png"
+  },
+  {
+    "id": "6029ac35-4eca-8428-26d5-0896013e4c63",
+    "name": "魔术火花",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/6029ac35-4eca-8428-26d5-0896013e4c63/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/64344670-4e0d-cc45-6f4e-88ba4b17f7a7/fullrender.png"
+  },
+  {
+    "id": "f1d98ecd-4d68-30af-8908-edafabcf18ab",
+    "name": "纳米奇宝 指虎",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/f1d98ecd-4d68-30af-8908-edafabcf18ab/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/a440f428-45ba-5579-cbe4-d2afebc25f08/fullrender.png"
+  },
+  {
+    "id": "1c808469-4aee-ae6c-fcd2-1099e96ac6a0",
+    "name": "逆命中队 手刺",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/1c808469-4aee-ae6c-fcd2-1099e96ac6a0/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/babf3b14-45e0-410f-b99e-d3b6af1a6d8a/fullrender.png"
+  },
+  {
+    "id": "83093e4f-4d62-07f7-b5f2-f7bcc1000ff7",
+    "name": "泡泡电锯",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/83093e4f-4d62-07f7-b5f2-f7bcc1000ff7/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/93866113-40a1-8839-8423-48b61c82bf31/fullrender.png"
+  },
+  {
+    "id": "b1e9530d-4618-4f2e-1b75-f1a90c91b19e",
+    "name": "破败王者之残刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/b1e9530d-4618-4f2e-1b75-f1a90c91b19e/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/28dd8ae8-4c0f-77c6-275d-e2bb310e95eb/fullrender.png"
+  },
+  {
+    "id": "07409307-46cc-98db-ec92-ceb04a865f73",
+    "name": "魄月玄刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/07409307-46cc-98db-ec92-ceb04a865f73/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/2de976d1-498c-eb19-9dc0-e6937915acea/fullrender.png"
+  },
+  {
+    "id": "151ee26c-4e82-e7ca-dad1-099e7fb34774",
+    "name": "奇点 军刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/151ee26c-4e82-e7ca-dad1-099e7fb34774/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/a42d1c90-4fcf-b6f5-4889-41b6805c0214/fullrender.png"
+  },
+  {
+    "id": "a114e83d-4662-6a6f-4717-bfb82fd9b8e0",
+    "name": "奇点//2.0 蝴蝶刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a114e83d-4662-6a6f-4717-bfb82fd9b8e0/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/f5bcd8eb-44ae-eaf8-f570-c19d5f564ad9/fullrender.png"
+  },
+  {
+    "id": "ac687fc4-40c5-4c41-6a7c-5eb59adabd60",
+    "name": "起源 环刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/ac687fc4-40c5-4c41-6a7c-5eb59adabd60/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/3d37799a-4ec1-61c1-ac3a-8db96119897e/fullrender.png"
+  },
+  {
+    "id": "c39f405f-42f1-acd1-a350-d3af39c32e33",
+    "name": "青瓷花剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/c39f405f-42f1-acd1-a350-d3af39c32e33/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/b5bdd4c9-4b22-a4d3-1ca4-4c8348f6a41d/fullrender.png"
+  },
+  {
+    "id": "ddc025b2-475f-889a-2800-80b4215582bc",
+    "name": "全息匕首",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/ddc025b2-475f-889a-2800-80b4215582bc/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/9d137aeb-41a1-a84f-3523-5194e24cc580/fullrender.png"
+  },
+  {
+    "id": "f0c42e14-4a92-132d-dfd4-cbbef103340c",
+    "name": "全息战斧",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/f0c42e14-4a92-132d-dfd4-cbbef103340c/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ded15275-482e-e9da-0002-1b9d495d2e98/fullrender.png"
+  },
+  {
+    "id": "6417e12d-4f03-13d4-8704-20bf3a1bcb5b",
+    "name": "赛尔凯特之刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": null,
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/c540628b-41e2-1789-92ad-7084372b03ee/fullrender.png"
+  },
+  {
+    "id": "46163791-47b9-2ef0-d255-aaa5146051bb",
+    "name": "神罚 军刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/46163791-47b9-2ef0-d255-aaa5146051bb/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/9c0fc8e8-4e36-86b7-8905-ee848916ea03/fullrender.png"
+  },
+  {
+    "id": "6bf7fc78-4f07-9a1e-1851-57bb824bc249",
+    "name": "神罚//2.0 战锤",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/6bf7fc78-4f07-9a1e-1851-57bb824bc249/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ad491fe1-4c19-7bb9-dc38-81bfa25d7e87/fullrender.png"
+  },
+  {
+    "id": "ff4bc096-4e6c-b67a-296a-5e814e4c0274",
+    "name": "神之刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/ff4bc096-4e6c-b67a-296a-5e814e4c0274/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/918fa636-4eb0-3499-5f96-0da3a77ee21e/fullrender.png"
+  },
+  {
+    "id": "3cc0aac5-45ff-e648-80f2-b9932ddf8bed",
+    "name": "生物分子解离器",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/3cc0aac5-45ff-e648-80f2-b9932ddf8bed/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/1812b01c-48db-3f59-75e9-3f8401b6d78f/fullrender.png"
+  },
+  {
+    "id": "a486efac-4415-1bfa-68d1-19bca9968101",
+    "name": "生物收割器",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a486efac-4415-1bfa-68d1-19bca9968101/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/332d51cd-4682-bd33-bb17-0e98300ce5ac/fullrender.png"
+  },
+  {
+    "id": "a03598b3-4879-3380-eb4c-d6b2d29dd565",
+    "name": "圣石匕首",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/a03598b3-4879-3380-eb4c-d6b2d29dd565/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/733cc417-4f08-6f0b-0db8-bfa4416112e6/fullrender.png"
+  },
+  {
+    "id": "6fd8cc46-48b3-f02c-46e3-cba372e7a328",
+    "name": "圣石遗物",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/6fd8cc46-48b3-f02c-46e3-cba372e7a328/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ab3d2950-426a-9b94-193d-65b53348386a/fullrender.png"
+  },
+  {
+    "id": "52080fe5-4903-41df-4538-32b3377866d0",
+    "name": "噬影者 簇刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/52080fe5-4903-41df-4538-32b3377866d0/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/96c70e80-453e-9f34-79c2-7ebe46221a44/fullrender.png"
+  },
+  {
+    "id": "eb557397-41b3-5745-fe4b-74bae0766257",
+    "name": "手工达人 战斧",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Randomizer"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/eb557397-41b3-5745-fe4b-74bae0766257/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/118709ea-4a80-efa0-56d7-19b647ab5cd4/fullrender.png"
+  },
+  {
+    "id": "d5701391-46e3-7509-2711-3d8e128938cb",
+    "name": "双城之战 拳套",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/d5701391-46e3-7509-2711-3d8e128938cb/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/cabee19e-42bc-e04b-7ae5-0eb88802aaf3/fullrender.png"
+  },
+  {
+    "id": "40b39690-4ec1-a3f2-a33e-60b2b96174d4",
+    "name": "双生獠牙",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/40b39690-4ec1-a3f2-a33e-60b2b96174d4/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/9d9e65c5-452d-6325-6f01-eea18100300c/fullrender.png"
+  },
+  {
+    "id": "4f6033d5-4b24-94f0-31ab-f6969a2c926c",
+    "name": "泰坦刺锤",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/4f6033d5-4b24-94f0-31ab-f6969a2c926c/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/9a2409be-4195-c29e-54dd-608c10a7a51c/fullrender.png"
+  },
+  {
+    "id": "2e77ac95-4681-3d87-bbdc-93a50ff6b1f6",
+    "name": "天玄刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/2e77ac95-4681-3d87-bbdc-93a50ff6b1f6/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/3391be35-4eab-936c-f26d-ec810f4454c8/fullrender.png"
+  },
+  {
+    "id": "95938baf-4000-1b9a-42e2-77909a49d380",
+    "name": "天御刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/95938baf-4000-1b9a-42e2-77909a49d380/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/5f888623-4bef-efd5-5a8b-a8bd2216e075/fullrender.png"
+  },
+  {
+    "id": "dc6cb084-4fb2-89cf-2113-4facb7767e9f",
+    "name": "威龙之刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/dc6cb084-4fb2-89cf-2113-4facb7767e9f/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/cdbb2e19-465d-4ba0-4617-51bbe1f208e7/fullrender.png"
+  },
+  {
+    "id": "cdcfab50-425d-6410-7a54-6aa913b7ce48",
+    "name": "未来开拓者",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Transformation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/cdcfab50-425d-6410-7a54-6aa913b7ce48/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/2ad9b50a-40f8-82fd-3594-d69ed33f8755/fullrender.png"
+  },
+  {
+    "id": "9a98f7dd-426c-603e-0569-e9b317c25ee4",
+    "name": "无畏契约季前邀请赛 悲悯之刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/9a98f7dd-426c-603e-0569-e9b317c25ee4/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/465c23f5-457b-e7ea-a59a-23993c087581/fullrender.png"
+  },
+  {
+    "id": "9cf4b95c-4a42-c0ab-0d97-c0927abffd92",
+    "name": "小鲸零号 甩棍",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/9cf4b95c-4a42-c0ab-0d97-c0927abffd92/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/87526251-494c-6772-d97a-13b0a85d138d/fullrender.png"
+  },
+  {
+    "id": "400bb847-4f4f-a39e-cd52-589f00b2204f",
+    "name": "谐波音谱",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/400bb847-4f4f-a39e-cd52-589f00b2204f/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/84eafd91-4e6b-0720-7c55-6484cbb732b8/fullrender.png"
+  },
+  {
+    "id": "6b689d71-4603-6140-f4a2-36a297ff3fdb",
+    "name": "熊熊刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/6b689d71-4603-6140-f4a2-36a297ff3fdb/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/7a7115c3-4938-8a53-3dc6-66a5e9923ecd/fullrender.png"
+  },
+  {
+    "id": "52a1647c-42d9-b40e-16cf-a7821566ad81",
+    "name": "雪季巡游",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": null,
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/29dd7a19-4654-af07-59bb-14b11db66e1a/fullrender.png"
+  },
+  {
+    "id": "d7eaba36-4f20-9685-7c5a-dabe6d31d81c",
+    "name": "偃月",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/d7eaba36-4f20-9685-7c5a-dabe6d31d81c/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/5b064653-4ace-2427-7255-05826786200e/fullrender.png"
+  },
+  {
+    "id": "b20bf3b2-4d71-0a6f-a3b4-a8b699656529",
+    "name": "夜刃诡镰",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Transformation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/b20bf3b2-4d71-0a6f-a3b4-a8b699656529/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/20e3b9f8-413b-075d-88af-1eb8885f2308/fullrender.png"
+  },
+  {
+    "id": "d034911c-45a6-1ce4-e6f5-4cbe57e9d4f1",
+    "name": "夜之蝴蝶",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/d034911c-45a6-1ce4-e6f5-4cbe57e9d4f1/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/d3f2119f-4853-e136-c807-e197b6a9c92e/fullrender.png"
+  },
+  {
+    "id": "81c37ac1-48d4-9747-7fd6-56932358a3fe",
+    "name": "影蝶",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/81c37ac1-48d4-9747-7fd6-56932358a3fe/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/f36aca9c-4138-3e30-fb23-9c80b619cd6f/fullrender.png"
+  },
+  {
+    "id": "b73d7b16-4652-bc5b-5c4c-068aabb19d0a",
+    "name": "影钩",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/b73d7b16-4652-bc5b-5c4c-068aabb19d0a/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/61eb0d02-4dfe-4413-6e29-4d9f9500e6a5/fullrender.png"
+  },
+  {
+    "id": "0aecb2b8-49cc-560e-42c7-6cbce44f05cf",
+    "name": "影刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/0aecb2b8-49cc-560e-42c7-6cbce44f05cf/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/71241f8e-4689-a110-0b22-8eac0aa512aa/fullrender.png"
+  },
+  {
+    "id": "83e8641b-41d0-821d-5eeb-5999e9294a0c",
+    "name": "源晶战刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/83e8641b-41d0-821d-5eeb-5999e9294a0c/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/2265cbe1-4b96-9f34-68ed-09900e0eaba9/fullrender.png"
+  },
+  {
+    "id": "1b8de6d7-4f37-7170-acd7-e78829f7959a",
+    "name": "源始幻刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/1b8de6d7-4f37-7170-acd7-e78829f7959a/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/27bfba0e-4747-41ca-b1c1-2082db194ba1/fullrender.png"
+  },
+  {
+    "id": "71020826-483d-34f8-8da7-928f87942c10",
+    "name": "再见安打",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/71020826-483d-34f8-8da7-928f87942c10/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/2870c012-4ad1-43d2-348d-2a98cc640833/fullrender.png"
+  },
+  {
+    "id": "39cf499b-4f82-e875-5320-b0a1d7fc58d4",
+    "name": "侦察力量 蝴蝶刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/39cf499b-4f82-e875-5320-b0a1d7fc58d4/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/ae57ad7b-4d9c-3931-8df6-6387f6d0411e/fullrender.png"
+  },
+  {
+    "id": "2da73e96-46e9-7161-531b-54a293acc4f2",
+    "name": "珍珠棘贝 短剑",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/2da73e96-46e9-7161-531b-54a293acc4f2/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/51e4a1c9-469b-61f4-6111-c09e1e918d23/fullrender.png"
+  },
+  {
+    "id": "987e847d-47d2-6ab3-2369-0497b6c39a7e",
+    "name": "稚狐夜刃",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/987e847d-47d2-6ab3-2369-0497b6c39a7e/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/73bd2862-42bf-3ab2-5546-0e93c6ab74b3/fullrender.png"
+  },
+  {
+    "id": "ec04e1a4-4067-bb9c-c18b-46a80e5f3f1f",
+    "name": "灼骨锤",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/ec04e1a4-4067-bb9c-c18b-46a80e5f3f1f/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/e740a207-4cd8-da88-84b3-11af53748fb6/fullrender.png"
+  },
+  {
+    "id": "9237e734-4a2a-38ae-7438-6cbee901877d",
+    "name": "紫金爪刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/9237e734-4a2a-38ae-7438-6cbee901877d/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/245202ea-46e4-72c3-0864-f08a8207c0c3/fullrender.png"
+  },
+  {
+    "id": "c4cb8c3b-4cb8-0260-609b-9a922a817a8f",
+    "name": "MK.VII 自由强袭 军刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [],
+    "image": "https://media.valorant-api.com/weaponskins/c4cb8c3b-4cb8-0260-609b-9a922a817a8f/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/63df320f-4c12-33dc-5d55-a78b06630033/fullrender.png"
+  },
+  {
+    "id": "6fb14e4e-41df-de2d-98bc-fcb68d27db48",
+    "name": "ORA x 颗秒 军刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation",
+      "SongShuffle"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/6fb14e4e-41df-de2d-98bc-fcb68d27db48/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/8cdc879e-4959-87e6-414d-7e924bbb566b/fullrender.png"
+  },
+  {
+    "id": "9fb366b6-46df-a722-0cf2-9c9b85936f17",
+    "name": "RGX 11z Pro 战刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Animation"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/9fb366b6-46df-a722-0cf2-9c9b85936f17/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/8ceded3e-4365-9aa6-eb7e-bda2cd553d6f/fullrender.png"
+  },
+  {
+    "id": "03de6b1a-4497-72e8-ae0c-2984b2e7e2b9",
+    "name": "RGX 11z Pro//2.0 蝴蝶刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "Randomizer"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/03de6b1a-4497-72e8-ae0c-2984b2e7e2b9/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/dabe2b1d-4b49-95ad-ac09-108fda10c52c/fullrender.png"
+  },
+  {
+    "id": "91130713-44e6-8436-d34c-e3badaf241b7",
+    "name": "RGX 11z Pro//3.0 爪刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/91130713-44e6-8436-d34c-e3badaf241b7/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/e0110689-40ad-f71c-0cce-34bd0d88843a/fullrender.png"
+  },
+  {
+    "id": "8cd5adfe-4a12-ac61-28a6-1a856d2fdd05",
+    "name": "VCT 2025 爪刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "VFX"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/8cd5adfe-4a12-ac61-28a6-1a856d2fdd05/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/12bd3231-49f5-a7d8-501f-698abb4b72ad/fullrender.png"
+  },
+  {
+    "id": "53c003f5-41f8-f946-7310-1ebfd3509aec",
+    "name": "VCT 2026 篆刀",
+    "weapon": "melee",
+    "tier": "传奇",
+    "tierRank": 3,
+    "effects": [
+      "SoundEffects"
+    ],
+    "image": "https://media.valorant-api.com/weaponskins/53c003f5-41f8-f946-7310-1ebfd3509aec/displayicon.png",
+    "fullRender": "https://media.valorant-api.com/weaponskinchromas/27262e01-4cea-6fcb-b45a-90b95ba59625/fullrender.png"
+  },
+  {
     "id": "8c72ae0b-4357-1a75-ad62-fbaec7b64f92",
     "name": "2022全球冠军赛 幻影",
     "weapon": "phantom",

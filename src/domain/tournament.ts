@@ -46,7 +46,6 @@ function assertConfig(config: WeaponConfig): void {
   const counts = [
     config.expectedCount,
     config.picksPerGroup,
-    config.wildcardSlots,
     config.bracketSize,
     ...config.groupSizes,
   ];
@@ -56,6 +55,10 @@ function assertConfig(config: WeaponConfig): void {
     counts.some((count) => !Number.isInteger(count) || count <= 0)
   ) {
     throw new Error('Tournament counts must be positive integers');
+  }
+
+  if (!Number.isInteger(config.wildcardSlots) || config.wildcardSlots < 0) {
+    throw new Error('Wildcard slots must be a non-negative integer');
   }
 
   const groupCapacity = config.groupSizes.reduce((total, size) => total + size, 0);
@@ -254,6 +257,14 @@ function createMatches(skins: readonly Skin[]): TournamentMatch[] {
   return matches;
 }
 
+function createFirstRound(
+  qualifiers: readonly Skin[],
+  seed: string,
+): readonly (readonly TournamentMatch[])[] {
+  const bracketEntrants = shuffled(qualifiers, seededRandom(`${seed}:bracket`));
+  return [createMatches(bracketEntrants)];
+}
+
 function buildTournament(
   skins: readonly Skin[],
   config: WeaponConfig,
@@ -335,14 +346,27 @@ export function confirmGroupPick(
   const qualifiers = currentGroup.filter((skin) => selected.has(skin.id));
   const losers = currentGroup.filter((skin) => !selected.has(skin.id));
   const nextGroupIndex = state.groupIndex + 1;
+  const allQualifiers = [...state.qualifiers, ...qualifiers];
+  const allLosers = [...state.losers, ...losers];
+  const groupsComplete = nextGroupIndex === state.groups.length;
+  const skipsRevival = groupsComplete && state.config.wildcardSlots === 0;
+
+  if (skipsRevival && allQualifiers.length !== state.config.bracketSize) {
+    throw new Error('Group picks did not fill the configured bracket');
+  }
 
   return {
     ...state,
-    phase: nextGroupIndex === state.groups.length ? 'revival' : 'groups',
+    phase: skipsRevival ? 'knockout' : groupsComplete ? 'revival' : 'groups',
     groupIndex: nextGroupIndex,
     groupPicks: [],
-    qualifiers: [...state.qualifiers, ...qualifiers],
-    losers: [...state.losers, ...losers],
+    qualifiers: allQualifiers,
+    losers: allLosers,
+    bracket: skipsRevival
+      ? createFirstRound(allQualifiers, state.seed)
+      : state.bracket,
+    roundIndex: skipsRevival ? 0 : state.roundIndex,
+    matchIndex: skipsRevival ? 0 : state.matchIndex,
     history: withSnapshot(state),
   };
 }
@@ -362,14 +386,12 @@ export function confirmWildcards(
     throw new Error('Wildcard picks did not fill the configured bracket');
   }
 
-  const bracketEntrants = shuffled(qualifiers, seededRandom(`${state.seed}:bracket`));
-
   return {
     ...state,
     phase: 'knockout',
     wildcardPicks: [...selectedIds],
     qualifiers,
-    bracket: [createMatches(bracketEntrants)],
+    bracket: createFirstRound(qualifiers, state.seed),
     roundIndex: 0,
     matchIndex: 0,
     history: withSnapshot(state),
@@ -483,10 +505,15 @@ export function restart(state: TournamentState, seed?: string): TournamentState 
 }
 
 export function progress(state: TournamentState): number {
-  const totalActions = state.groups.length + 1 + (state.config.bracketSize - 1);
+  const revivalActions = state.config.wildcardSlots > 0 ? 1 : 0;
+  const totalActions =
+    state.groups.length + revivalActions + (state.config.bracketSize - 1);
   const completedGroups = Math.min(state.groupIndex, state.groups.length);
   const completedWildcards =
-    state.phase === 'knockout' || state.phase === 'complete' ? 1 : 0;
+    state.config.wildcardSlots > 0 &&
+    (state.phase === 'knockout' || state.phase === 'complete')
+      ? 1
+      : 0;
   const completedDuels = state.bracket
     .flat()
     .filter((match) => match.winner !== null).length;

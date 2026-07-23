@@ -49,8 +49,8 @@ function finishTournament(state: TournamentState): TournamentState {
   return current;
 }
 
-function stateAtLastGroup(): TournamentState {
-  let state = createState('sheriff');
+function stateAtLastGroup(weapon: WeaponId = 'sheriff'): TournamentState {
+  let state = createState(weapon);
   while (state.phase === 'groups' && state.groupIndex < state.groups.length - 1) {
     state = confirmGroupPick(
       state,
@@ -79,7 +79,12 @@ it('shows enabled launch controls with the exact generated counts', () => {
   expect(
     screen.getByRole('img', { name: 'VALORANT-CUP 赛事标志' }),
   ).toBeInTheDocument();
-  for (const skinName of ['光明哨兵 狂徒', '离子武器 幻影', '奇点 正义']) {
+  for (const skinName of [
+    '光明哨兵 狂徒',
+    '离子武器 幻影',
+    '奇点 正义',
+    '紫金爪刀',
+  ]) {
     expect(
       screen.getByRole('img', { name: `${skinName} 代表皮肤` }),
     ).toBeInTheDocument();
@@ -87,9 +92,11 @@ it('shows enabled launch controls with the exact generated counts', () => {
   expect(screen.getByRole('button', { name: /狂徒.*42/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /幻影.*36/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /正义.*24/ })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /近战武器.*118/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /狂徒.*42/ })).toBeEnabled();
   expect(screen.getByRole('button', { name: /幻影.*36/ })).toBeEnabled();
   expect(screen.getByRole('button', { name: /正义.*24/ })).toBeEnabled();
+  expect(screen.getByRole('button', { name: /近战武器.*118/ })).toBeEnabled();
 });
 
 it('starts a fresh tournament for the chosen weapon', () => {
@@ -101,6 +108,16 @@ it('starts a fresh tournament for the chosen weapon', () => {
   expect(screen.getByText('第 1 / 6 组')).toBeInTheDocument();
   expect(loadTournament()).toMatchObject({ weapon: 'sheriff', phase: 'groups' });
   expect(loadTournament()?.seed).toBeTruthy();
+});
+
+it('starts the curated melee tournament with 32 groups', () => {
+  render(<App />);
+
+  fireEvent.click(screen.getByRole('button', { name: /近战武器.*118/ }));
+
+  expect(screen.getByRole('heading', { name: '小组赛' })).toBeInTheDocument();
+  expect(screen.getByText('第 1 / 32 组')).toBeInTheDocument();
+  expect(loadTournament()).toMatchObject({ weapon: 'melee', phase: 'groups' });
 });
 
 it('confirms exactly two group picks and clears selection for the next group', () => {
@@ -133,6 +150,21 @@ it('moves from the final group into revival', () => {
 
   expect(screen.getByRole('heading', { name: '复活赛' })).toBeInTheDocument();
   expect(screen.getByText('从落选皮肤中选择 4 个复活名额')).toBeInTheDocument();
+});
+
+it('moves from the final melee group directly into the 1/32 final', () => {
+  const state = stateAtLastGroup('melee');
+  saveTournament(state);
+  render(<App />);
+
+  for (const skin of state.groups[state.groupIndex].slice(0, 2)) {
+    fireEvent.click(screen.getByRole('button', { name: `选择 ${skin.name}` }));
+  }
+  fireEvent.click(screen.getByRole('button', { name: '确认晋级' }));
+
+  expect(screen.getByRole('heading', { name: '1/32 决赛' })).toBeInTheDocument();
+  expect(screen.getByText('第 1 / 32 场')).toBeInTheDocument();
+  expect(loadTournament()?.phase).toBe('knockout');
 });
 
 it('selects configured loser wildcards and starts the knockout bracket', () => {

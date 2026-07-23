@@ -19,7 +19,7 @@ import { skinCatalog } from '../data/generated-skin-catalog';
 export const STORAGE_KEY = 'skin-cup:v1';
 const STORAGE_VERSION = 1;
 const phases = new Set(['groups', 'revival', 'knockout', 'complete']);
-const weapons = new Set<WeaponId>(['vandal', 'phantom', 'sheriff']);
+const weapons = new Set<WeaponId>(['vandal', 'phantom', 'sheriff', 'melee']);
 
 type UnknownRecord = Record<string, unknown>;
 
