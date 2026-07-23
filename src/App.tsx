@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChampionScreen } from './components/ChampionScreen';
+import { CreatorFooter } from './components/CreatorFooter';
 import { GroupStage } from './components/GroupStage';
 import { KnockoutStage } from './components/KnockoutStage';
 import { RevivalStage } from './components/RevivalStage';
@@ -61,7 +62,12 @@ export default function App() {
   }
 
   if (state === null) {
-    return <WeaponSelect weapons={weaponOptions} onSelect={start} />;
+    return (
+      <div className="home-shell">
+        <WeaponSelect weapons={weaponOptions} onSelect={start} />
+        <CreatorFooter />
+      </div>
+    );
   }
 
   function selectGroupSkin(skinId: string) {
@@ -129,6 +135,7 @@ export default function App() {
           />
         )}
       </main>
+      <CreatorFooter />
     </div>
   );
 }

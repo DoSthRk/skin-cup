@@ -97,6 +97,10 @@ it('shows enabled launch controls with the exact generated counts', () => {
   expect(screen.getByRole('button', { name: /幻影.*36/ })).toBeEnabled();
   expect(screen.getByRole('button', { name: /正义.*24/ })).toBeEnabled();
   expect(screen.getByRole('button', { name: /近战武器.*118/ })).toBeEnabled();
+  expect(screen.getByText('MADE BY')).toBeInTheDocument();
+  expect(
+    screen.getByRole('button', { name: '查看作者 Clint 的个人信息' }),
+  ).toBeInTheDocument();
 });
 
 it('starts a fresh tournament for the chosen weapon', () => {
@@ -106,6 +110,9 @@ it('starts a fresh tournament for the chosen weapon', () => {
 
   expect(screen.getByRole('heading', { name: '小组赛' })).toBeInTheDocument();
   expect(screen.getByText('第 1 / 6 组')).toBeInTheDocument();
+  expect(
+    screen.getByRole('button', { name: '查看作者 Clint 的个人信息' }),
+  ).toBeInTheDocument();
   expect(loadTournament()).toMatchObject({ weapon: 'sheriff', phase: 'groups' });
   expect(loadTournament()?.seed).toBeTruthy();
 });
