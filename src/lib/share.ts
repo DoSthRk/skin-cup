@@ -1,4 +1,5 @@
 import type { Skin, TournamentState } from '../domain/types';
+import { getRoundDescriptor } from '../domain/bracket';
 
 export interface ChampionPathStep {
   readonly label: string;
@@ -16,16 +17,6 @@ export type ShareImageOutcome = 'shared' | 'downloaded' | 'cancelled';
 
 export const SHARE_IMAGE_TIMEOUT_MS = 8_000;
 export const DOWNLOAD_CLEANUP_DELAY_MS = 1_000;
-
-function roundLabel(state: TournamentState, roundIndex: number): string {
-  if (roundIndex === state.bracket.length - 1) {
-    return '决赛';
-  }
-  if (roundIndex === state.bracket.length - 2) {
-    return '半决赛';
-  }
-  return `${state.config.bracketSize / 2 ** roundIndex} 强`;
-}
 
 export function deriveTournamentResult(state: TournamentState): TournamentResult {
   if (state.phase !== 'complete' || !state.champion || !state.runnerUp) {
@@ -54,7 +45,10 @@ export function deriveTournamentResult(state: TournamentState): TournamentResult
       throw new Error('赛事对阵数据不完整，无法推导冠军路径');
     }
 
-    return { label: roundLabel(state, roundIndex), opponent };
+    return {
+      label: getRoundDescriptor(state.config.bracketSize, roundIndex).title,
+      opponent,
+    };
   });
 
   return {
