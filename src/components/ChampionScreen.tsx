@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { TournamentState } from '../domain/types';
 import {
   buildShareImage,
@@ -20,9 +20,27 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
   const [shareBlob, setShareBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [generationState, setGenerationState] = useState<GenerationState>('idle');
-  const [message, setMessage] = useState('尚未生成分享图');
+  const [message, setMessage] = useState('先生成分享图，再使用系统分享');
+  const mountedRef = useRef(true);
+  const requestTokenRef = useRef(0);
   const championImage = result.champion.fullRender ?? result.champion.image;
   const filename = `Skin-Cup-${state.config.label}-${result.champion.name}.jpg`;
+  const resultKey = `${state.weapon}:${state.seed}:${result.champion.id}`;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      requestTokenRef.current += 1;
+    };
+  }, []);
+
+  useEffect(() => {
+    requestTokenRef.current += 1;
+    setShareBlob(null);
+    setGenerationState('idle');
+    setMessage('先生成分享图，再使用系统分享');
+  }, [resultKey]);
 
   useEffect(() => {
     setChampionImageFailed(false);
@@ -39,15 +57,23 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
   }, [shareBlob]);
 
   async function generate(): Promise<Blob | null> {
+    const requestToken = requestTokenRef.current + 1;
+    requestTokenRef.current = requestToken;
     setGenerationState('generating');
     setMessage('正在生成分享图…');
     try {
       const blob = await buildShareImage(state);
+      if (!mountedRef.current || requestToken !== requestTokenRef.current) {
+        return null;
+      }
       setShareBlob(blob);
       setGenerationState('success');
       setMessage('分享图已生成');
       return blob;
     } catch (error) {
+      if (!mountedRef.current || requestToken !== requestTokenRef.current) {
+        return null;
+      }
       setGenerationState('error');
       setMessage(error instanceof Error ? error.message : '分享图生成失败，请稍后重试');
       return null;
@@ -65,17 +91,19 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
     setMessage('分享图已下载');
   }
 
-  async function share(): Promise<void> {
-    const blob = await ensureShareBlob();
-    if (!blob) return;
-    const outcome = await shareShareImage(blob, filename);
-    setMessage(
-      outcome === 'shared'
-        ? '已打开系统分享'
-        : outcome === 'cancelled'
-          ? '已取消系统分享'
-          : '当前设备无法分享，已改为下载',
-    );
+  function share(): void {
+    if (!shareBlob) return;
+    const requestToken = requestTokenRef.current;
+    void shareShareImage(shareBlob, filename).then((outcome) => {
+      if (!mountedRef.current || requestToken !== requestTokenRef.current) return;
+      setMessage(
+        outcome === 'shared'
+          ? '已打开系统分享'
+          : outcome === 'cancelled'
+            ? '已取消系统分享'
+            : '当前设备无法分享，已改为下载',
+      );
+    });
   }
 
   return (
@@ -155,6 +183,7 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
           </div>
         )}
         <p
+          id="share-status"
           className={`share-status share-status--${generationState}`}
           role="status"
           aria-live="polite"
@@ -168,7 +197,12 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
           <button type="button" onClick={() => void download()} disabled={generationState === 'generating'}>
             下载图片
           </button>
-          <button type="button" onClick={() => void share()} disabled={generationState === 'generating'}>
+          <button
+            type="button"
+            onClick={share}
+            disabled={!shareBlob || generationState === 'generating'}
+            aria-describedby="share-status"
+          >
             系统分享
           </button>
         </div>

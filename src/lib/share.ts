@@ -14,6 +14,9 @@ export interface TournamentResult {
 
 export type ShareImageOutcome = 'shared' | 'downloaded' | 'cancelled';
 
+export const SHARE_IMAGE_TIMEOUT_MS = 8_000;
+export const DOWNLOAD_CLEANUP_DELAY_MS = 1_000;
+
 function roundLabel(state: TournamentState, roundIndex: number): string {
   if (roundIndex === state.bracket.length - 1) {
     return '决赛';
@@ -69,9 +72,29 @@ function loadImage(url: string | null): Promise<HTMLImageElement | null> {
 
   return new Promise((resolve) => {
     const image = new Image();
+    let settled = false;
+    const finish = (result: HTMLImageElement | null, abortLoad = false) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      image.onload = null;
+      image.onerror = null;
+      if (abortLoad) {
+        try {
+          image.src = '';
+        } catch {
+          // Some engines reject clearing an in-flight image; the settled guard still ignores it.
+        }
+      }
+      resolve(result);
+    };
     image.crossOrigin = 'anonymous';
-    image.onload = () => resolve(image);
-    image.onerror = () => resolve(null);
+    image.onload = () => finish(image);
+    image.onerror = () => finish(null);
+    const timeoutId = window.setTimeout(
+      () => finish(null, true),
+      SHARE_IMAGE_TIMEOUT_MS,
+    );
     image.src = url;
   });
 }
@@ -240,8 +263,14 @@ export function downloadShareImage(blob: Blob, filename: string): void {
   const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = filename;
+  anchor.dataset.skinCupDownload = 'true';
+  anchor.hidden = true;
+  document.body.append(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => {
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }, DOWNLOAD_CLEANUP_DELAY_MS);
 }
 
 function isAbortError(error: unknown): boolean {

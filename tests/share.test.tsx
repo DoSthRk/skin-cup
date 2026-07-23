@@ -1,11 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { ChampionScreen } from '../src/components/ChampionScreen';
 import { skinCatalog } from '../src/data/generated-skin-catalog';
 import { weaponConfigs } from '../src/domain/catalog';
 import {
   buildShareImage,
+  DOWNLOAD_CLEANUP_DELAY_MS,
   deriveTournamentResult,
   downloadShareImage,
+  SHARE_IMAGE_TIMEOUT_MS,
   shareShareImage,
 } from '../src/lib/share';
 import {
@@ -16,11 +19,11 @@ import {
 } from '../src/domain/tournament';
 import type { TournamentState } from '../src/domain/types';
 
-function completedSheriffState(): TournamentState {
+function completedSheriffState(seed = 'completed-sheriff-test'): TournamentState {
   let state = createTournament(
     skinCatalog.filter((skin) => skin.weapon === 'sheriff'),
     weaponConfigs.sheriff,
-    'completed-sheriff-test',
+    seed,
   );
 
   while (state.phase === 'groups') {
@@ -69,6 +72,8 @@ const context = {
 
 let loadedImages: Array<{ crossOrigin: string | null; src: string }> = [];
 let imageShouldFail = false;
+let imageShouldHang = false;
+let mockImages: MockImage[] = [];
 
 class MockImage {
   crossOrigin: string | null = null;
@@ -83,6 +88,9 @@ class MockImage {
   set src(value: string) {
     this.#src = value;
     loadedImages.push({ crossOrigin: this.crossOrigin, src: value });
+    if (imageShouldHang) {
+      return;
+    }
     queueMicrotask(() => {
       if (imageShouldFail) {
         this.onerror?.();
@@ -102,8 +110,16 @@ let anchorClick: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
   loadedImages = [];
   imageShouldFail = false;
+  imageShouldHang = false;
+  mockImages = [];
   vi.clearAllMocks();
-  vi.stubGlobal('Image', MockImage);
+  vi.useRealTimers();
+  vi.stubGlobal('Image', class extends MockImage {
+    constructor() {
+      super();
+      mockImages.push(this);
+    }
+  });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
     context as unknown as CanvasRenderingContext2D,
   );
@@ -130,6 +146,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -186,6 +203,30 @@ it('still creates the share image with an accessible-looking text fallback when 
   );
 });
 
+it('times out a hanging remote image, cleans it up, and still draws the fallback', async () => {
+  vi.useFakeTimers();
+  imageShouldHang = true;
+
+  const shareImage = buildShareImage(completedSheriffState());
+  await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS - 1);
+  expect(context.fillText).not.toHaveBeenCalledWith(
+    expect.stringContaining('图片暂不可用'),
+    expect.any(Number),
+    expect.any(Number),
+  );
+  await vi.advanceTimersByTimeAsync(1);
+
+  await expect(shareImage).resolves.toBeInstanceOf(Blob);
+  expect(mockImages[0].onload).toBeNull();
+  expect(mockImages[0].onerror).toBeNull();
+  expect(mockImages[0].src).toBe('');
+  expect(context.fillText).toHaveBeenCalledWith(
+    expect.stringContaining('图片暂不可用'),
+    expect.any(Number),
+    expect.any(Number),
+  );
+});
+
 it('throws a clear error if canvas export returns no blob', async () => {
   vi.mocked(HTMLCanvasElement.prototype.toBlob).mockImplementationOnce((callback) => {
     callback(null);
@@ -196,13 +237,20 @@ it('throws a clear error if canvas export returns no blob', async () => {
   );
 });
 
-it('downloads with a temporary object URL and revokes it', () => {
+it('downloads through an attached link and revokes its object URL after a short delay', () => {
+  vi.useFakeTimers();
   const blob = new Blob(['skin-cup'], { type: 'image/jpeg' });
 
   downloadShareImage(blob, '冠军.jpg');
 
   expect(URL.createObjectURL).toHaveBeenCalledWith(blob);
   expect(anchorClick).toHaveBeenCalledOnce();
+  expect(document.body.querySelector('a[download="冠军.jpg"]')).toBeInTheDocument();
+  expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+
+  vi.advanceTimersByTime(DOWNLOAD_CLEANUP_DELAY_MS);
+
+  expect(document.body.querySelector('a[download="冠军.jpg"]')).not.toBeInTheDocument();
   expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:skin-cup');
 });
 
@@ -271,14 +319,93 @@ it('shows the complete podium and gives explicit generation feedback', async () 
   expect(screen.getByText(`亚军 · ${state.runnerUp!.name}`)).toBeInTheDocument();
   expect(screen.getAllByTestId('semifinalist')).toHaveLength(4);
   expect(screen.getAllByTestId('path-step')).toHaveLength(4);
+  expect(screen.getByRole('button', { name: '系统分享' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '系统分享' })).toHaveAttribute(
+    'aria-describedby',
+    'share-status',
+  );
 
   fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
   expect(screen.getByRole('status')).toHaveTextContent('正在生成分享图');
   await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('分享图已生成'));
   expect(screen.getByRole('img', { name: '正义冠军分享图预览' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled();
 
   fireEvent.click(screen.getByRole('button', { name: '再来一场' }));
   expect(onPlayAgain).toHaveBeenCalledOnce();
+});
+
+it('invokes native sharing in the generated-image click without an intervening await', async () => {
+  let inClick = false;
+  const nativeShare = vi.fn(() => {
+    if (!inClick) {
+      throw new Error('lost transient activation');
+    }
+    return Promise.resolve();
+  });
+  Object.defineProperty(navigator, 'canShare', {
+    configurable: true,
+    value: vi.fn(() => true),
+  });
+  Object.defineProperty(navigator, 'share', {
+    configurable: true,
+    value: nativeShare,
+  });
+  render(<ChampionScreen state={completedSheriffState()} onPlayAgain={() => {}} />);
+
+  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled());
+
+  inClick = true;
+  fireEvent.click(screen.getByRole('button', { name: '系统分享' }));
+  inClick = false;
+
+  expect(nativeShare).toHaveBeenCalledOnce();
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('已打开系统分享'));
+});
+
+it('ignores a hanging generation after a new completed tournament replaces it', async () => {
+  vi.useFakeTimers();
+  imageShouldHang = true;
+  const first = completedSheriffState('first-complete');
+  const second = completedSheriffState('second-complete');
+  const { rerender } = render(<ChampionScreen state={first} onPlayAgain={() => {}} />);
+
+  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
+  expect(screen.getByRole('status')).toHaveTextContent('正在生成分享图');
+  rerender(<ChampionScreen state={second} onPlayAgain={() => {}} />);
+
+  expect(screen.getByRole('status')).toHaveTextContent('先生成分享图，再使用系统分享');
+  expect(screen.getByRole('button', { name: '生成分享图' })).toBeEnabled();
+  await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS);
+  expect(screen.queryByRole('img', { name: '正义冠军分享图预览' })).not.toBeInTheDocument();
+});
+
+it('does not publish a hanging generation result after unmount', async () => {
+  vi.useFakeTimers();
+  imageShouldHang = true;
+  const { unmount } = render(
+    <ChampionScreen state={completedSheriffState()} onPlayAgain={() => {}} />,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
+  unmount();
+  await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS);
+
+  expect(URL.createObjectURL).not.toHaveBeenCalled();
+});
+
+it('still publishes the current generation result under React StrictMode', async () => {
+  render(
+    <StrictMode>
+      <ChampionScreen state={completedSheriffState()} onPlayAgain={() => {}} />
+    </StrictMode>,
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
+
+  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('分享图已生成'));
+  expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled();
 });
 
 it('replaces a failed champion visual with a labelled placeholder', () => {
