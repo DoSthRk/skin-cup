@@ -263,6 +263,7 @@ function stateCore(state: TournamentState): TournamentCore {
 function advanceToward(
   state: TournamentState,
   target: TournamentCore,
+  persistedGroupPicks: readonly string[],
 ): TournamentState | null {
   try {
     let advanced: TournamentState;
@@ -272,9 +273,11 @@ function advanceToward(
         state.groups[state.groupIndex].map((skin) => skin.id),
       );
       const existingQualifierIds = new Set(state.qualifiers.map((skin) => skin.id));
-      const selectedIds = target.qualifierIds.filter(
-        (id) => currentGroupIds.has(id) && !existingQualifierIds.has(id),
-      );
+      const selectedIds = persistedGroupPicks.length > 0
+        ? persistedGroupPicks
+        : target.qualifierIds.filter(
+            (id) => currentGroupIds.has(id) && !existingQualifierIds.has(id),
+          );
       advanced = confirmGroupPick(state, selectedIds);
     } else if (state.phase === 'revival') {
       advanced = confirmWildcards(state, target.wildcardPicks);
@@ -313,7 +316,11 @@ function isCausalHistory(state: TournamentState): boolean {
       }
 
       const target = snapshotCores[index + 1] ?? currentCore;
-      const advanced = advanceToward(replay, target);
+      const advanced = advanceToward(
+        replay,
+        target,
+        state.history[index].groupPicks,
+      );
       if (advanced === null) {
         return false;
       }

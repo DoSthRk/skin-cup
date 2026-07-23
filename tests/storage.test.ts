@@ -5,6 +5,7 @@ import {
   confirmGroupPick,
   confirmWildcards,
   createTournament,
+  toggleGroupPick,
 } from '../src/domain/tournament';
 import type { TournamentState } from '../src/domain/types';
 import {
@@ -464,6 +465,27 @@ it('rejects compact history spliced from a different valid branch', () => {
   expectStoredStateRejected({
     ...branchA,
     history: [branchA.history[0], branchB.history[1]],
+  });
+});
+
+it('rejects tampered non-empty group picks in compact history', () => {
+  const initial = vandalState();
+  const group = initial.groups[initial.groupIndex];
+  const selectedIds = group
+    .slice(0, initial.config.picksPerGroup)
+    .map((skin) => skin.id);
+  const selected = selectedIds.reduce(toggleGroupPick, initial);
+  const confirmed = confirmGroupPick(selected);
+  const alternateIds = group
+    .slice(-initial.config.picksPerGroup)
+    .map((skin) => skin.id);
+
+  expect(confirmed.history[0].groupPicks).toEqual(selectedIds);
+  expect(saveTournament(confirmed)).toBe(true);
+  expect(loadTournament()).toEqual(confirmed);
+  expectStoredStateRejected({
+    ...confirmed,
+    history: [{ ...confirmed.history[0], groupPicks: alternateIds }],
   });
 });
 
