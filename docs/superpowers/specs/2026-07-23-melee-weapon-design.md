@@ -145,4 +145,6 @@ melee: {
 
 ## 发布
 
-实施完成后恢复并保留现有双发布构建链，不能采用 Kimi 删除 `.openai/hosting.json`、删除 `prepare-sites-build.mjs` 或把服务器目录改为裸 `dist` 的未提交方案。发布继续使用现有 `dist/client` 静态目录，并分别验证自有服务器域名和 Sites 版本。
+根据用户后续确认，OpenAI Sites 不再属于发布范围。移除 `.openai/hosting.json` 和 Sites 专用 Worker 包装步骤，`npm run build` 直接生成标准 Vite `dist/`。
+
+服务器 Nginx 继续以 `/var/www/valorant-cup/current` 为站点根目录。每次发布把 `dist/` 内的静态文件复制到独立的 `/var/www/valorant-cup/releases/<commit>`，校验后原子切换 `current` 软链接。发布过程中不得修改内部 TURNS 项目的目录、Java 进程、Nginx server block 或 `8080` 端口。
