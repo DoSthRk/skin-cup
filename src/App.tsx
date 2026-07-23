@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChampionScreen } from './components/ChampionScreen';
 import { DuelStage } from './components/DuelStage';
 import { GroupStage } from './components/GroupStage';
 import { RevivalStage } from './components/RevivalStage';
@@ -94,10 +95,10 @@ export default function App() {
           />
         )}
         {state.phase === 'complete' && (
-          <section className="stage complete-placeholder" aria-labelledby="complete-heading">
-            <h1 id="complete-heading">冠军诞生</h1>
-            <p>{state.champion?.name}</p>
-          </section>
+          <ChampionScreen
+            state={state}
+            onPlayAgain={() => commit(restart(state, freshSeed()))}
+          />
         )}
       </main>
     </div>

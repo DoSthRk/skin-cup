@@ -4,6 +4,7 @@ import { SkinCard } from '../src/components/SkinCard';
 import { weaponConfigs } from '../src/domain/catalog';
 import { skinCatalog } from '../src/data/generated-skin-catalog';
 import {
+  chooseWinner,
   confirmGroupPick,
   confirmWildcards,
   createTournament,
@@ -27,6 +28,21 @@ function finishGroups(state: TournamentState): TournamentState {
       current.groups[current.groupIndex]
         .slice(0, current.config.picksPerGroup)
         .map((skin) => skin.id),
+    );
+  }
+  return current;
+}
+
+function finishTournament(state: TournamentState): TournamentState {
+  let current = finishGroups(state);
+  current = confirmWildcards(
+    current,
+    current.losers.slice(0, current.config.wildcardSlots).map((skin) => skin.id),
+  );
+  while (current.phase === 'knockout') {
+    current = chooseWinner(
+      current,
+      current.bracket[current.roundIndex][current.matchIndex].skins[0].id,
     );
   }
   return current;
@@ -180,4 +196,18 @@ it('keeps a skin selectable after replacing a failed remote image', () => {
   expect(button).toBeEnabled();
   fireEvent.click(button);
   expect(onSelect).toHaveBeenCalledWith(skin.id);
+});
+
+it('renders the completed tournament and starts the same weapon again with a fresh seed', () => {
+  const completed = finishTournament(createState('sheriff', 'completed-app-test'));
+  saveTournament(completed);
+  render(<App />);
+
+  expect(screen.getByRole('heading', { name: '冠军诞生' })).toBeInTheDocument();
+  expect(screen.getByText(completed.champion!.name)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '再来一场' }));
+
+  expect(screen.getByRole('heading', { name: '小组赛' })).toBeInTheDocument();
+  expect(loadTournament()).toMatchObject({ weapon: 'sheriff', phase: 'groups' });
+  expect(loadTournament()?.seed).not.toBe('completed-app-test');
 });
