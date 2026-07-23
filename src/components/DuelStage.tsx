@@ -5,7 +5,7 @@ interface DuelStageProps {
   readonly match: TournamentMatch;
   readonly matchNumber: number;
   readonly matchCount: number;
-  readonly roundNumber: number;
+  readonly roundTitle: string;
   readonly onChoose: (skinId: string) => void;
 }
 
@@ -13,14 +13,14 @@ export function DuelStage({
   match,
   matchNumber,
   matchCount,
-  roundNumber,
+  roundTitle,
   onChoose,
 }: DuelStageProps) {
   return (
     <section className="stage" aria-labelledby="duel-heading">
       <header className="stage__heading">
-        <h1 id="duel-heading">淘汰赛</h1>
-        <p>第 {roundNumber} 轮</p>
+        <span className="eyebrow">KNOCKOUT</span>
+        <h1 id="duel-heading">{roundTitle}</h1>
         <p>第 {matchNumber} / {matchCount} 场</p>
         <p>选择本场胜者</p>
       </header>

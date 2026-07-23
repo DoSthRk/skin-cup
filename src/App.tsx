@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChampionScreen } from './components/ChampionScreen';
-import { DuelStage } from './components/DuelStage';
 import { GroupStage } from './components/GroupStage';
+import { KnockoutStage } from './components/KnockoutStage';
 import { RevivalStage } from './components/RevivalStage';
 import { TopBar } from './components/TopBar';
 import { WeaponSelect } from './components/WeaponSelect';
@@ -86,11 +86,13 @@ export default function App() {
           />
         )}
         {state.phase === 'knockout' && currentMatch && (
-          <DuelStage
+          <KnockoutStage
+            key={`${state.seed}:${state.roundIndex}`}
+            bracketSize={state.config.bracketSize}
+            roundIndex={state.roundIndex}
             match={currentMatch}
             matchNumber={state.matchIndex + 1}
             matchCount={currentRound.length}
-            roundNumber={state.roundIndex + 1}
             onChoose={(skinId) => commit(chooseWinner(state, skinId))}
           />
         )}

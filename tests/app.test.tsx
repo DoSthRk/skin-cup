@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import App from '../src/App';
+import { ROUND_INTRO_DURATION_MS } from '../src/components/RoundIntro';
 import { SkinCard } from '../src/components/SkinCard';
 import { weaponConfigs } from '../src/domain/catalog';
 import { skinCatalog } from '../src/data/generated-skin-catalog';
@@ -62,6 +63,10 @@ function stateAtLastGroup(): TournamentState {
 beforeEach(() => {
   localStorage.clear();
   vi.restoreAllMocks();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 it('shows enabled launch controls with the exact generated counts', () => {
@@ -129,7 +134,7 @@ it('selects configured loser wildcards and starts the knockout bracket', () => {
   }
   fireEvent.click(screen.getByRole('button', { name: '确认复活' }));
 
-  expect(screen.getByRole('heading', { name: '淘汰赛' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: '1/8 决赛' })).toBeInTheDocument();
   expect(screen.getByText('第 1 / 8 场')).toBeInTheDocument();
   expect(loadTournament()?.phase).toBe('knockout');
 });
@@ -148,6 +153,36 @@ it('chooses one current duel skin and advances to the next match', () => {
 
   expect(screen.getByText('第 2 / 8 场')).toBeInTheDocument();
   expect(loadTournament()?.matchIndex).toBe(1);
+});
+
+it('announces the next formal round after the final match of a round', () => {
+  vi.useFakeTimers();
+  const grouped = finishGroups(createState('sheriff', 'round-transition'));
+  let state = confirmWildcards(
+    grouped,
+    grouped.losers.slice(0, grouped.config.wildcardSlots).map((skin) => skin.id),
+  );
+
+  while (state.roundIndex === 0 && state.matchIndex < state.bracket[0].length - 1) {
+    const match = state.bracket[state.roundIndex][state.matchIndex];
+    state = chooseWinner(state, match.skins[0].id);
+  }
+
+  saveTournament(state);
+  render(<App />);
+
+  act(() => {
+    vi.advanceTimersByTime(ROUND_INTRO_DURATION_MS);
+  });
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+  const finalMatch = state.bracket[state.roundIndex][state.matchIndex];
+  fireEvent.click(
+    screen.getByRole('button', { name: `选择 ${finalMatch.skins[0].name}` }),
+  );
+
+  expect(screen.getByRole('status')).toHaveTextContent('1/4 决赛');
+  expect(loadTournament()).toMatchObject({ roundIndex: 1, matchIndex: 0 });
 });
 
 it('resumes valid progress and supports undo', () => {

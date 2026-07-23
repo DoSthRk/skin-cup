@@ -213,6 +213,84 @@ strong {
   padding: clamp(1rem, 4vw, 2.5rem);
 }
 
+.round-intro {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(1.5rem, 6vw, 5rem);
+  background:
+    linear-gradient(128deg, transparent 0 62%, rgb(126 233 238 / 9%) 62% 62.4%, transparent 62.4%),
+    radial-gradient(circle at 50% 45%, rgb(255 70 85 / 18%), transparent 34rem),
+    #07090b;
+  animation: round-intro-enter 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.round-intro::before,
+.round-intro::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.round-intro::before {
+  inset: 9% 6%;
+  border: 1px solid rgb(126 233 238 / 22%);
+  clip-path: polygon(0 0, 88% 0, 100% 18%, 100% 100%, 12% 100%, 0 82%);
+}
+
+.round-intro::after {
+  width: min(72rem, 120vw);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--red), transparent);
+  box-shadow: 0 7rem 0 rgb(126 233 238 / 32%);
+  transform: rotate(-8deg);
+}
+
+.round-intro__frame {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.75rem, 3vw, 1.4rem);
+  text-align: center;
+}
+
+.round-intro__brand {
+  color: var(--red);
+  font-size: 0.8rem;
+  font-weight: 950;
+  letter-spacing: 0.34em;
+}
+
+.round-intro strong {
+  max-width: 12ch;
+  font-size: clamp(3.4rem, 14vw, 9rem);
+  font-weight: 950;
+  letter-spacing: -0.07em;
+  line-height: 0.88;
+}
+
+.round-intro p {
+  color: #c8d0d1;
+  font-size: clamp(0.9rem, 2.6vw, 1.2rem);
+  font-weight: 650;
+}
+
+@keyframes round-intro-enter {
+  from {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .stage {
   display: grid;
   gap: 1.25rem;
@@ -548,5 +626,9 @@ strong {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .round-intro {
+    animation: none;
   }
 }
