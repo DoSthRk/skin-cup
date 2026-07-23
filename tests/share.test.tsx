@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -6,6 +7,7 @@ import {
   within,
 } from '@testing-library/react';
 import { StrictMode } from 'react';
+import { BracketSharePanel } from '../src/components/BracketSharePanel';
 import { ChampionScreen } from '../src/components/ChampionScreen';
 import { skinCatalog } from '../src/data/generated-skin-catalog';
 import { weaponConfigs } from '../src/domain/catalog';
@@ -353,6 +355,36 @@ it('uses native file sharing when supported', async () => {
   expect(anchorClick).not.toHaveBeenCalled();
 });
 
+it('uses the supplied title and text when sharing a bracket image', async () => {
+  const nativeShare = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'canShare', {
+    configurable: true,
+    value: vi.fn(() => true),
+  });
+  Object.defineProperty(navigator, 'share', {
+    configurable: true,
+    value: nativeShare,
+  });
+
+  await expect(
+    shareShareImage(
+      new Blob(['skin-cup'], { type: 'image/jpeg' }),
+      '完整晋级图.jpg',
+      {
+        title: 'Skin Cup 完整晋级图',
+        text: '这是我的完整皮肤淘汰赛晋级图。',
+      },
+    ),
+  ).resolves.toBe('shared');
+  expect(nativeShare).toHaveBeenCalledWith(
+    expect.objectContaining({
+      title: 'Skin Cup 完整晋级图',
+      text: '这是我的完整皮肤淘汰赛晋级图。',
+      files: [expect.any(File)],
+    }),
+  );
+});
+
 it('falls back to download when native sharing is unsupported or fails', async () => {
   const blob = new Blob(['skin-cup'], { type: 'image/jpeg' });
 
@@ -388,7 +420,7 @@ it('does not force a download when the user cancels native sharing', async () =>
   expect(anchorClick).not.toHaveBeenCalled();
 });
 
-it('shows the complete podium and gives explicit generation feedback', async () => {
+it('shows the complete podium and automatically prepares both result images', async () => {
   const state = completedSheriffState();
   const onPlayAgain = vi.fn();
   render(<ChampionScreen state={state} onPlayAgain={onPlayAgain} />);
@@ -398,25 +430,37 @@ it('shows the complete podium and gives explicit generation feedback', async () 
   expect(screen.getByText(`亚军 · ${state.runnerUp!.name}`)).toBeInTheDocument();
   expect(screen.getAllByTestId('semifinalist')).toHaveLength(4);
   expect(screen.getAllByTestId('path-step')).toHaveLength(4);
-  expect(screen.getByRole('button', { name: '系统分享' })).toBeDisabled();
-  expect(screen.getByRole('button', { name: '系统分享' })).toHaveAttribute(
+  expect(screen.queryByRole('button', { name: '生成分享图' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '生成晋级图' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '分享冠军图' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '分享冠军图' })).toHaveAttribute(
     'aria-describedby',
     'share-status',
   );
 
-  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
-  expect(championShareStatus()).toHaveTextContent('正在生成分享图');
   await waitFor(() =>
     expect(championShareStatus()).toHaveTextContent('分享图已生成'),
   );
   expect(screen.getByRole('img', { name: '正义冠军分享图预览' })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: '下载冠军图' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: '分享冠军图' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: '下载晋级图' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: '分享晋级图' })).toBeEnabled();
 
   fireEvent.click(screen.getByRole('button', { name: '再来一场' }));
   expect(onPlayAgain).toHaveBeenCalledOnce();
 });
 
-it('generates, previews, and downloads the complete bracket independently', async () => {
+it('automatically previews and can download and share the complete bracket', async () => {
+  const nativeShare = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'canShare', {
+    configurable: true,
+    value: vi.fn(() => true),
+  });
+  Object.defineProperty(navigator, 'share', {
+    configurable: true,
+    value: nativeShare,
+  });
   render(
     <ChampionScreen
       state={completedSheriffState('bracket-panel')}
@@ -430,8 +474,6 @@ it('generates, previews, and downloads the complete bracket independently', asyn
   expect(
     within(panel).getByText('包含淘汰赛每一轮、每一场对决和胜者'),
   ).toBeInTheDocument();
-
-  fireEvent.click(within(panel).getByRole('button', { name: '生成晋级图' }));
 
   await waitFor(() =>
     expect(
@@ -448,9 +490,23 @@ it('generates, previews, and downloads the complete bracket independently', asyn
       'a[download="Skin-Cup-正义-完整晋级图.jpg"]',
     ),
   ).toBeInTheDocument();
+
+  fireEvent.click(within(panel).getByRole('button', { name: '分享晋级图' }));
+  expect(nativeShare).toHaveBeenCalledWith(
+    expect.objectContaining({
+      title: 'Skin Cup 完整晋级图',
+      text: '这是我的完整皮肤淘汰赛晋级图。',
+      files: [expect.any(File)],
+    }),
+  );
+  await waitFor(() =>
+    expect(within(panel).getByRole('status')).toHaveTextContent(
+      '已打开系统分享',
+    ),
+  );
 });
 
-it('invokes native sharing in the generated-image click without an intervening await', async () => {
+it('invokes native sharing from the prepared champion image without an intervening await', async () => {
   let inClick = false;
   const nativeShare = vi.fn(() => {
     if (!inClick) {
@@ -468,11 +524,12 @@ it('invokes native sharing in the generated-image click without an intervening a
   });
   render(<ChampionScreen state={completedSheriffState()} onPlayAgain={() => {}} />);
 
-  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
-  await waitFor(() => expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled());
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: '分享冠军图' })).toBeEnabled(),
+  );
 
   inClick = true;
-  fireEvent.click(screen.getByRole('button', { name: '系统分享' }));
+  fireEvent.click(screen.getByRole('button', { name: '分享冠军图' }));
   inClick = false;
 
   expect(nativeShare).toHaveBeenCalledOnce();
@@ -488,16 +545,19 @@ it('ignores a hanging generation after a new completed tournament replaces it', 
   const second = completedSheriffState('second-complete');
   const { rerender } = render(<ChampionScreen state={first} onPlayAgain={() => {}} />);
 
-  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
   expect(championShareStatus()).toHaveTextContent('正在生成分享图');
+  await act(async () => {
+    await Promise.resolve();
+  });
   rerender(<ChampionScreen state={second} onPlayAgain={() => {}} />);
 
-  expect(championShareStatus()).toHaveTextContent(
-    '先生成分享图，再使用系统分享',
-  );
-  expect(screen.getByRole('button', { name: '生成分享图' })).toBeEnabled();
-  await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS);
-  expect(screen.queryByRole('img', { name: '正义冠军分享图预览' })).not.toBeInTheDocument();
+  expect(championShareStatus()).toHaveTextContent('正在生成分享图');
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS);
+  });
+  expect(screen.getByRole('img', { name: '正义冠军分享图预览' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '分享冠军图' })).toBeEnabled();
+  expect(URL.createObjectURL).toHaveBeenCalledTimes(3);
 });
 
 it('does not publish a hanging generation result after unmount', async () => {
@@ -507,11 +567,14 @@ it('does not publish a hanging generation result after unmount', async () => {
     <ChampionScreen state={completedSheriffState()} onPlayAgain={() => {}} />,
   );
 
-  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+  const publishedBeforeUnmount = vi.mocked(URL.createObjectURL).mock.calls.length;
   unmount();
   await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS);
 
-  expect(URL.createObjectURL).not.toHaveBeenCalled();
+  expect(URL.createObjectURL).toHaveBeenCalledTimes(publishedBeforeUnmount);
 });
 
 it('still publishes the current generation result under React StrictMode', async () => {
@@ -521,18 +584,38 @@ it('still publishes the current generation result under React StrictMode', async
     </StrictMode>,
   );
 
-  fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
-
   await waitFor(() =>
     expect(championShareStatus()).toHaveTextContent('分享图已生成'),
   );
-  expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: '分享冠军图' })).toBeEnabled();
 });
 
-it('replaces a failed champion visual with a labelled placeholder', () => {
+it('publishes one bracket preview under StrictMode and revokes it on unmount', async () => {
+  const { unmount } = render(
+    <StrictMode>
+      <BracketSharePanel state={completedSheriffState()} />
+    </StrictMode>,
+  );
+
+  await waitFor(() =>
+    expect(
+      screen.getByRole('img', { name: '正义完整晋级图预览' }),
+    ).toBeInTheDocument(),
+  );
+  expect(URL.createObjectURL).toHaveBeenCalledOnce();
+
+  unmount();
+
+  expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:skin-cup');
+});
+
+it('replaces a failed champion visual with a labelled placeholder', async () => {
   const state = completedSheriffState();
   render(<ChampionScreen state={state} onPlayAgain={() => {}} />);
 
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: '分享冠军图' })).toBeEnabled(),
+  );
   fireEvent.error(screen.getByRole('img', { name: `${state.champion!.name} 冠军皮肤图片` }));
 
   expect(

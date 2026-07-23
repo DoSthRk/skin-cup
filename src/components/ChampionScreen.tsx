@@ -20,8 +20,9 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
   const [championImageFailed, setChampionImageFailed] = useState(false);
   const [shareBlob, setShareBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [generationState, setGenerationState] = useState<GenerationState>('idle');
-  const [message, setMessage] = useState('先生成分享图，再使用系统分享');
+  const [generationState, setGenerationState] =
+    useState<GenerationState>('generating');
+  const [message, setMessage] = useState('正在生成分享图…');
   const mountedRef = useRef(true);
   const requestTokenRef = useRef(0);
   const previewUrlRef = useRef<string | null>(null);
@@ -49,8 +50,7 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
     }
     setShareBlob(null);
     setPreviewUrl(null);
-    setGenerationState('idle');
-    setMessage('先生成分享图，再使用系统分享');
+    void generate();
   }, [resultKey]);
 
   useEffect(() => {
@@ -199,11 +199,8 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
           {message}
         </p>
         <div className="share-actions">
-          <button type="button" onClick={() => void generate()} disabled={generationState === 'generating'}>
-            {generationState === 'generating' ? '生成中…' : '生成分享图'}
-          </button>
           <button type="button" onClick={() => void download()} disabled={generationState === 'generating'}>
-            下载图片
+            下载冠军图
           </button>
           <button
             type="button"
@@ -211,7 +208,7 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
             disabled={!shareBlob || generationState === 'generating'}
             aria-describedby="share-status"
           >
-            系统分享
+            分享冠军图
           </button>
         </div>
       </section>

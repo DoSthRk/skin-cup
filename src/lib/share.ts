@@ -18,6 +18,11 @@ export interface TournamentResult {
 
 export type ShareImageOutcome = 'shared' | 'downloaded' | 'cancelled';
 
+export interface ShareImageMetadata {
+  readonly title: string;
+  readonly text: string;
+}
+
 export const SHARE_IMAGE_TIMEOUT_MS = 8_000;
 export const DOWNLOAD_CLEANUP_DELAY_MS = 1_000;
 export const BRACKET_IMAGE_WIDTH = 1_440;
@@ -424,11 +429,18 @@ function isAbortError(error: unknown): boolean {
     : typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError';
 }
 
-export async function shareShareImage(blob: Blob, filename: string): Promise<ShareImageOutcome> {
-  const file = new File([blob], filename, { type: 'image/jpeg' });
-  const shareData: ShareData = {
+export async function shareShareImage(
+  blob: Blob,
+  filename: string,
+  metadata: ShareImageMetadata = {
     title: 'Skin Cup 冠军',
     text: '这是我选出的皮肤冠军。',
+  },
+): Promise<ShareImageOutcome> {
+  const file = new File([blob], filename, { type: 'image/jpeg' });
+  const shareData: ShareData = {
+    title: metadata.title,
+    text: metadata.text,
     files: [file],
   };
 

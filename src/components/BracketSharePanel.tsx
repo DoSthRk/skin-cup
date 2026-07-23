@@ -3,6 +3,7 @@ import type { TournamentState } from '../domain/types';
 import {
   buildBracketImage,
   downloadShareImage,
+  shareShareImage,
 } from '../lib/share';
 
 interface BracketSharePanelProps {
@@ -15,8 +16,8 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
   const [bracketBlob, setBracketBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [generationState, setGenerationState] =
-    useState<GenerationState>('idle');
-  const [message, setMessage] = useState('生成后即可预览和下载');
+    useState<GenerationState>('generating');
+  const [message, setMessage] = useState('正在生成完整晋级图…');
   const mountedRef = useRef(true);
   const requestTokenRef = useRef(0);
   const previewUrlRef = useRef<string | null>(null);
@@ -32,6 +33,10 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
         previewUrlRef.current = null;
       }
     };
+  }, []);
+
+  useEffect(() => {
+    void generate();
   }, []);
 
   async function generate(): Promise<Blob | null> {
@@ -76,6 +81,26 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
     setMessage('晋级图已下载');
   }
 
+  function share(): void {
+    if (!bracketBlob) return;
+    const requestToken = requestTokenRef.current;
+    void shareShareImage(bracketBlob, filename, {
+      title: 'Skin Cup 完整晋级图',
+      text: '这是我的完整皮肤淘汰赛晋级图。',
+    }).then((outcome) => {
+      if (!mountedRef.current || requestToken !== requestTokenRef.current) {
+        return;
+      }
+      setMessage(
+        outcome === 'shared'
+          ? '已打开系统分享'
+          : outcome === 'cancelled'
+            ? '已取消系统分享'
+            : '当前设备无法分享，已改为下载',
+      );
+    });
+  }
+
   return (
     <section
       className="share-panel bracket-share-panel"
@@ -113,17 +138,18 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
       <div className="share-actions bracket-share-actions">
         <button
           type="button"
-          onClick={() => void generate()}
-          disabled={generationState === 'generating'}
-        >
-          {generationState === 'generating' ? '生成中…' : '生成晋级图'}
-        </button>
-        <button
-          type="button"
           onClick={() => void download()}
           disabled={generationState === 'generating'}
         >
           下载晋级图
+        </button>
+        <button
+          type="button"
+          onClick={share}
+          disabled={!bracketBlob || generationState === 'generating'}
+          aria-describedby="bracket-share-status"
+        >
+          分享晋级图
         </button>
       </div>
     </section>
