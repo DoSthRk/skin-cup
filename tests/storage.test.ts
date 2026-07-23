@@ -70,6 +70,11 @@ function sheriffSecondRound(): TournamentState {
   return state;
 }
 
+function expectStoredStateRejected(state: unknown): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state }));
+  expect(loadTournament()).toBeNull();
+}
+
 beforeEach(() => {
   localStorage.clear();
   vi.restoreAllMocks();
@@ -253,6 +258,161 @@ it('rejects unreachable complete-phase compact history', () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: malformed }));
 
   expect(loadTournament()).toBeNull();
+});
+
+it('rejects duplicate, overlapping, or incomplete completed-group partitions', () => {
+  const initial = vandalState();
+  const progressed = confirmGroupPick(
+    initial,
+    initial.groups[0].slice(0, initial.config.picksPerGroup).map((skin) => skin.id),
+  );
+
+  expectStoredStateRejected({
+    ...progressed,
+    qualifiers: [progressed.qualifiers[0], progressed.qualifiers[0]],
+  });
+  expectStoredStateRejected({
+    ...progressed,
+    losers: [progressed.qualifiers[0]],
+  });
+  expectStoredStateRejected({
+    ...progressed,
+    losers: [],
+  });
+});
+
+it('rejects duplicate, non-loser, or wrong-count revival wildcard picks', () => {
+  const revival = finishGroups(vandalState());
+  const loserIds = revival.losers.map((skin) => skin.id);
+
+  for (const wildcardPicks of [
+    [loserIds[0], loserIds[0], loserIds[1], loserIds[2]],
+    [loserIds[0], loserIds[1], loserIds[2], revival.qualifiers[0].id],
+    [loserIds[0]],
+  ]) {
+    expectStoredStateRejected({ ...revival, wildcardPicks });
+  }
+});
+
+it('rejects duplicate or mismatched knockout qualifiers and first-round entrants', () => {
+  const knockout = sheriffKnockout();
+  expectStoredStateRejected({
+    ...knockout,
+    qualifiers: [knockout.qualifiers[0], knockout.qualifiers[0], ...knockout.qualifiers.slice(2)],
+  });
+
+  const duplicate = knockout.bracket[0][1].skins[0];
+  const malformedFirstRound = knockout.bracket[0].map((match, index) =>
+    index === 0 ? { ...match, skins: [duplicate, match.skins[1]] } : match,
+  );
+  expectStoredStateRejected({
+    ...knockout,
+    bracket: [malformedFirstRound],
+  });
+});
+
+it('rejects later bracket rounds not derived from prior winners', () => {
+  const secondRound = sheriffSecondRound();
+  const priorLoser = secondRound.bracket[0][0].skins.find(
+    (skin) => skin.id !== secondRound.bracket[0][0].winner?.id,
+  )!;
+  const malformedSecondRound = secondRound.bracket[1].map((match, index) =>
+    index === 0 ? { ...match, skins: [priorLoser, match.skins[1]] } : match,
+  );
+  expectStoredStateRejected({
+    ...secondRound,
+    bracket: [secondRound.bracket[0], malformedSecondRound],
+  });
+
+  const changedWinner = {
+    ...secondRound.bracket[0][0],
+    winner: priorLoser,
+  };
+  const malformedPriorRound = secondRound.bracket[0].map((match, index) =>
+    index === 0 ? changedWinner : match,
+  );
+  expectStoredStateRejected({
+    ...secondRound,
+    bracket: [malformedPriorRound, secondRound.bracket[1]],
+  });
+});
+
+it('rejects unreachable completed-group partitions in compact history', () => {
+  const initial = vandalState();
+  const afterFirst = confirmGroupPick(
+    initial,
+    initial.groups[0].slice(0, initial.config.picksPerGroup).map((skin) => skin.id),
+  );
+  const afterSecond = confirmGroupPick(
+    afterFirst,
+    afterFirst.groups[1].slice(0, afterFirst.config.picksPerGroup).map((skin) => skin.id),
+  );
+  const snapshotIndex = afterSecond.history.length - 1;
+  const malformed = {
+    ...afterSecond,
+    history: afterSecond.history.map((snapshot, index) =>
+      index === snapshotIndex
+        ? {
+            ...snapshot,
+            qualifierIds: [snapshot.qualifierIds[0], snapshot.qualifierIds[0]],
+          }
+        : snapshot,
+    ),
+  };
+
+  expectStoredStateRejected(malformed);
+});
+
+it('rejects unreachable revival and knockout provenance in compact history', () => {
+  const knockout = sheriffKnockout();
+  const revivalSnapshotIndex = knockout.history.length - 1;
+  const revivalSnapshot = knockout.history[revivalSnapshotIndex];
+  expectStoredStateRejected({
+    ...knockout,
+    history: knockout.history.map((snapshot, index) =>
+      index === revivalSnapshotIndex
+        ? {
+            ...snapshot,
+            wildcardPicks: [
+              revivalSnapshot.loserIds[0],
+              revivalSnapshot.loserIds[0],
+              revivalSnapshot.loserIds[1],
+              revivalSnapshot.loserIds[2],
+            ],
+          }
+        : snapshot,
+    ),
+  });
+
+  const secondRound = sheriffSecondRound();
+  const afterOneMatch = chooseWinner(
+    secondRound,
+    secondRound.bracket[secondRound.roundIndex][secondRound.matchIndex].skins[0].id,
+  );
+  const knockoutSnapshotIndex = afterOneMatch.history.length - 1;
+  const knockoutSnapshot = afterOneMatch.history[knockoutSnapshotIndex];
+  const priorLoserId = knockoutSnapshot.bracket[0][0].skinIds.find(
+    (id) => id !== knockoutSnapshot.bracket[0][0].winnerId,
+  )!;
+  expectStoredStateRejected({
+    ...afterOneMatch,
+    history: afterOneMatch.history.map((snapshot, index) =>
+      index === knockoutSnapshotIndex
+        ? {
+            ...snapshot,
+            bracket: snapshot.bracket.map((round, roundIndex) =>
+              roundIndex === 1
+                ? round.map((match, matchIndex) =>
+                    matchIndex === 0
+                      ? { ...match, skinIds: [priorLoserId, match.skinIds[1]] }
+                      : match,
+                  )
+                : round,
+            ),
+          }
+        : snapshot,
+    ),
+  });
 });
 
 it('swallows storage quota and security errors so gameplay can continue', () => {

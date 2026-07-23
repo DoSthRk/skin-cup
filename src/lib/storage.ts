@@ -2,8 +2,10 @@ import { weaponConfigs } from '../domain/catalog';
 import type {
   Skin,
   TournamentMatchSnapshot,
+  TournamentPhase,
   TournamentSnapshot,
   TournamentState,
+  WeaponConfig,
   WeaponId,
 } from '../domain/types';
 import { skinCatalog } from '../data/generated-skin-catalog';
@@ -51,6 +53,164 @@ function isSkinArray(
   return Array.isArray(value) && value.every((skin) => isCurrentSkin(skin, currentById));
 }
 
+interface PhasePartition {
+  readonly phase: TournamentPhase;
+  readonly groupIndex: number;
+  readonly groupPicks: readonly string[];
+  readonly qualifierIds: readonly string[];
+  readonly loserIds: readonly string[];
+  readonly wildcardPicks: readonly string[];
+}
+
+interface BracketReference {
+  readonly skinIds: readonly [string, string];
+  readonly winnerId: string | null;
+}
+
+function hasUniqueIds(ids: readonly string[]): boolean {
+  return new Set(ids).size === ids.length;
+}
+
+function hasSameIds(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const rightIds = new Set(right);
+  return hasUniqueIds(left) && hasUniqueIds(right) && left.every((id) => rightIds.has(id));
+}
+
+function isReachablePartition(
+  partition: PhasePartition,
+  groups: readonly (readonly Skin[])[],
+  config: WeaponConfig,
+): boolean {
+  const {
+    phase,
+    groupIndex,
+    groupPicks,
+    qualifierIds,
+    loserIds,
+    wildcardPicks,
+  } = partition;
+
+  if (
+    !hasUniqueIds(groupPicks) ||
+    !hasUniqueIds(qualifierIds) ||
+    !hasUniqueIds(loserIds) ||
+    !hasUniqueIds(wildcardPicks)
+  ) {
+    return false;
+  }
+
+  if (phase === 'groups') {
+    const currentGroupIds = new Set(groups[groupIndex]?.map((skin) => skin.id));
+    if (
+      groupIndex >= groups.length ||
+      groupPicks.length > config.picksPerGroup ||
+      groupPicks.some((id) => !currentGroupIds.has(id)) ||
+      wildcardPicks.length !== 0
+    ) {
+      return false;
+    }
+  } else if (groupIndex !== groups.length || groupPicks.length !== 0) {
+    return false;
+  }
+
+  const completedGroups = groups.slice(0, groupIndex);
+  const completedIds = completedGroups.flatMap((group) => group.map((skin) => skin.id));
+  const loserSet = new Set(loserIds);
+  const wildcardSet = new Set(wildcardPicks);
+  const knockoutStarted = phase === 'knockout' || phase === 'complete';
+
+  if (knockoutStarted) {
+    if (
+      wildcardPicks.length !== config.wildcardSlots ||
+      wildcardPicks.some((id) => !loserSet.has(id)) ||
+      wildcardPicks.some((id) => !qualifierIds.includes(id)) ||
+      qualifierIds.length !== config.bracketSize
+    ) {
+      return false;
+    }
+  } else if (wildcardPicks.length !== 0) {
+    return false;
+  }
+
+  const baseQualifierIds = knockoutStarted
+    ? qualifierIds.filter((id) => !wildcardSet.has(id))
+    : qualifierIds;
+  const baseQualifierSet = new Set(baseQualifierIds);
+  const expectedQualifierCount = completedGroups.length * config.picksPerGroup;
+  const expectedLoserCount = completedIds.length - expectedQualifierCount;
+
+  if (
+    baseQualifierIds.length !== expectedQualifierCount ||
+    loserIds.length !== expectedLoserCount ||
+    baseQualifierIds.some((id) => loserSet.has(id)) ||
+    !hasSameIds([...baseQualifierIds, ...loserIds], completedIds)
+  ) {
+    return false;
+  }
+
+  if (
+    knockoutStarted &&
+    qualifierIds.some((id) => loserSet.has(id) !== wildcardSet.has(id))
+  ) {
+    return false;
+  }
+
+  return completedGroups.every((group) => {
+    const ids = group.map((skin) => skin.id);
+    return (
+      ids.filter((id) => baseQualifierSet.has(id)).length === config.picksPerGroup &&
+      ids.filter((id) => loserSet.has(id)).length === group.length - config.picksPerGroup
+    );
+  });
+}
+
+function isCausalBracket(
+  bracket: readonly (readonly BracketReference[])[],
+  qualifierIds: readonly string[],
+): boolean {
+  if (bracket.length === 0) {
+    return false;
+  }
+
+  const firstRoundIds = bracket[0].flatMap((match) => match.skinIds);
+  if (!hasSameIds(firstRoundIds, qualifierIds)) {
+    return false;
+  }
+
+  for (let roundIndex = 1; roundIndex < bracket.length; roundIndex += 1) {
+    const priorWinnerIds = bracket[roundIndex - 1].map((match) => match.winnerId);
+    if (priorWinnerIds.some((id) => id === null)) {
+      return false;
+    }
+
+    const expectedIds = priorWinnerIds as string[];
+    const actualIds = bracket[roundIndex].flatMap((match) => match.skinIds);
+    if (
+      actualIds.length !== expectedIds.length ||
+      actualIds.some((id, index) => id !== expectedIds[index])
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function stateBracketReferences(
+  bracket: TournamentState['bracket'],
+): readonly (readonly BracketReference[])[] {
+  return bracket.map((round) =>
+    round.map((match) => ({
+      skinIds: [match.skins[0].id, match.skins[1].id],
+      winnerId: match.winner?.id ?? null,
+    })),
+  );
+}
+
 function isMatchSnapshot(value: unknown, entrantIds: ReadonlySet<string>): value is TournamentMatchSnapshot {
   if (!isRecord(value) || !Array.isArray(value.skinIds) || value.skinIds.length !== 2) {
     return false;
@@ -72,7 +232,7 @@ function isSnapshot(
   value: unknown,
   entrantIds: ReadonlySet<string>,
   groups: readonly (readonly Skin[])[],
-  picksPerGroup: number,
+  config: WeaponConfig,
 ): value is TournamentSnapshot {
   if (!isRecord(value)) {
     return false;
@@ -115,7 +275,20 @@ function isSnapshot(
 
   const snapshot = value as unknown as TournamentSnapshot;
 
-  if (new Set(snapshot.groupPicks).size !== snapshot.groupPicks.length) {
+  if (
+    !isReachablePartition(
+      {
+        phase: snapshot.phase,
+        groupIndex: snapshot.groupIndex,
+        groupPicks: snapshot.groupPicks,
+        qualifierIds: snapshot.qualifierIds,
+        loserIds: snapshot.loserIds,
+        wildcardPicks: snapshot.wildcardPicks,
+      },
+      groups,
+      config,
+    )
+  ) {
     return false;
   }
 
@@ -123,7 +296,7 @@ function isSnapshot(
     const currentGroupIds = new Set(groups[snapshot.groupIndex]?.map((skin) => skin.id));
     return (
       snapshot.groupIndex < groups.length &&
-      snapshot.groupPicks.length <= picksPerGroup &&
+      snapshot.groupPicks.length <= config.picksPerGroup &&
       snapshot.groupPicks.every((id) => currentGroupIds.has(id)) &&
       snapshot.bracket.length === 0 &&
       snapshot.roundIndex === 0 &&
@@ -144,6 +317,10 @@ function isSnapshot(
   }
 
   if (snapshot.phase === 'complete') {
+    return false;
+  }
+
+  if (!isCausalBracket(snapshot.bracket, snapshot.qualifierIds)) {
     return false;
   }
 
@@ -230,7 +407,7 @@ function isTournamentState(value: unknown): value is TournamentState {
         snapshot,
         entrantIds,
         value.groups as readonly (readonly Skin[])[],
-        currentConfig.picksPerGroup,
+        currentConfig,
       ),
     )
   ) {
@@ -244,6 +421,24 @@ function isTournamentState(value: unknown): value is TournamentState {
     ...value.wildcardPicks,
   ];
   if (allReferenceIds.some((id) => !entrantIds.has(id))) {
+    return false;
+  }
+
+  const state = value as unknown as TournamentState;
+  if (
+    !isReachablePartition(
+      {
+        phase: state.phase,
+        groupIndex: state.groupIndex,
+        groupPicks: state.groupPicks,
+        qualifierIds: state.qualifiers.map((skin) => skin.id),
+        loserIds: state.losers.map((skin) => skin.id),
+        wildcardPicks: state.wildcardPicks,
+      },
+      state.groups,
+      currentConfig,
+    )
+  ) {
     return false;
   }
 
@@ -274,6 +469,10 @@ function isTournamentState(value: unknown): value is TournamentState {
   }
 
   if (value.bracket.length === 0 || value.roundIndex >= value.bracket.length) {
+    return false;
+  }
+
+  if (!isCausalBracket(stateBracketReferences(state.bracket), state.qualifiers.map((skin) => skin.id))) {
     return false;
   }
 
