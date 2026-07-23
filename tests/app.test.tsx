@@ -73,6 +73,7 @@ it('shows enabled launch controls with the exact generated counts', () => {
   render(<App />);
 
   expect(screen.getByRole('heading', { name: '皮肤之巅' })).toBeInTheDocument();
+  expect(screen.getByText('valorant-cup')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /狂徒.*42/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /幻影.*36/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /正义.*24/ })).toBeInTheDocument();
@@ -201,7 +202,7 @@ it('resumes valid progress and supports undo', () => {
   expect(loadTournament()?.groupIndex).toBe(0);
 });
 
-it('requires a clear second action before restarting the current weapon', () => {
+it('returns to the home screen and clears the current tournament', () => {
   const initial = createState('sheriff', 'before-restart');
   const progressed = confirmGroupPick(
     initial,
@@ -210,13 +211,10 @@ it('requires a clear second action before restarting the current weapon', () => 
   saveTournament(progressed);
   render(<App />);
 
-  fireEvent.click(screen.getByRole('button', { name: '重新开始' }));
-  expect(screen.getByText('第 2 / 6 组')).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '再次点击确认重开' }));
+  fireEvent.click(screen.getByRole('button', { name: '回到主页' }));
 
-  expect(screen.getByText('第 1 / 6 组')).toBeInTheDocument();
-  expect(loadTournament()).toMatchObject({ phase: 'groups', groupIndex: 0, history: [] });
-  expect(loadTournament()?.seed).not.toBe('before-restart');
+  expect(screen.getByRole('heading', { name: '皮肤之巅' })).toBeInTheDocument();
+  expect(loadTournament()).toBeNull();
 });
 
 it('keeps a skin selectable after replacing a failed remote image', () => {

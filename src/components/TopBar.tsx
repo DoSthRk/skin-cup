@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import type { TournamentPhase } from '../domain/types';
 
 const phaseLabels: Record<TournamentPhase, string> = {
@@ -14,7 +13,7 @@ interface TopBarProps {
   readonly progress: number;
   readonly canUndo: boolean;
   readonly onUndo: () => void;
-  readonly onRestart: () => void;
+  readonly onHome: () => void;
 }
 
 export function TopBar({
@@ -23,23 +22,8 @@ export function TopBar({
   progress,
   canUndo,
   onUndo,
-  onRestart,
+  onHome,
 }: TopBarProps) {
-  const [restartArmed, setRestartArmed] = useState(false);
-
-  useEffect(() => {
-    setRestartArmed(false);
-  }, [phase, progress]);
-
-  function requestRestart() {
-    if (!restartArmed) {
-      setRestartArmed(true);
-      return;
-    }
-    setRestartArmed(false);
-    onRestart();
-  }
-
   return (
     <header className="top-bar">
       <div>
@@ -50,12 +34,8 @@ export function TopBar({
         <button type="button" disabled={!canUndo} onClick={onUndo}>
           撤销上一步
         </button>
-        <button
-          type="button"
-          className={restartArmed ? 'danger-action' : undefined}
-          onClick={requestRestart}
-        >
-          {restartArmed ? '再次点击确认重开' : '重新开始'}
+        <button type="button" onClick={onHome}>
+          回到主页
         </button>
       </nav>
     </header>

@@ -15,6 +15,7 @@ export function WeaponSelect({ weapons, onSelect }: WeaponSelectProps) {
   return (
     <main className="app-shell home-screen">
       <h1>皮肤之巅</h1>
+      <p className="home-screen__english-title">valorant-cup</p>
       <p>选择武器，开启你的皮肤锦标赛。</p>
       <div className="weapon-launches" aria-label="武器选择">
         {weapons.map((weapon) => (

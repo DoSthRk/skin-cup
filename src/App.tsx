@@ -18,7 +18,7 @@ import {
   undo,
 } from './domain/tournament';
 import type { TournamentState, WeaponId } from './domain/types';
-import { loadTournament, saveTournament } from './lib/storage';
+import { clearTournament, loadTournament, saveTournament } from './lib/storage';
 
 const weaponOrder: readonly WeaponId[] = ['vandal', 'phantom', 'sheriff'];
 const weaponOptions = weaponOrder.map((id) => ({
@@ -53,6 +53,11 @@ export default function App() {
     );
   }
 
+  function goHome() {
+    clearTournament();
+    setState(null);
+  }
+
   if (state === null) {
     return <WeaponSelect weapons={weaponOptions} onSelect={start} />;
   }
@@ -68,7 +73,7 @@ export default function App() {
         progress={tournamentProgress(state)}
         canUndo={state.history.length > 0}
         onUndo={() => commit(undo(state))}
-        onRestart={() => commit(restart(state, freshSeed()))}
+        onHome={goHome}
       />
       <main className="tournament-main">
         {state.phase === 'groups' && (

@@ -119,6 +119,13 @@ strong {
   text-transform: uppercase;
 }
 
+.home-screen > .home-screen__english-title {
+  color: var(--cyan);
+  font-size: clamp(0.85rem, 2.5vw, 1.15rem);
+  font-weight: 900;
+  letter-spacing: 0.32em;
+}
+
 .home-screen > p {
   color: var(--muted);
 }
