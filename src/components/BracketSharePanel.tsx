@@ -37,7 +37,7 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
 
   useEffect(() => {
     void generate();
-  }, []);
+  }, [state]);
 
   async function generate(): Promise<Blob | null> {
     const requestToken = requestTokenRef.current + 1;

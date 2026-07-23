@@ -3,6 +3,7 @@ import {
   deriveBracketRounds,
   getRoundDescriptor,
 } from '../domain/bracket';
+import type { BracketRoundResult } from '../domain/bracket';
 
 export interface ChampionPathStep {
   readonly label: string;
@@ -27,11 +28,22 @@ export const SHARE_IMAGE_TIMEOUT_MS = 8_000;
 export const DOWNLOAD_CLEANUP_DELAY_MS = 1_000;
 export const BRACKET_IMAGE_WIDTH = 1_440;
 
-const BRACKET_HEADER_HEIGHT = 320;
-const BRACKET_ROUND_HEADER_HEIGHT = 96;
-const BRACKET_MATCH_HEIGHT = 88;
-const BRACKET_ROUND_GAP = 44;
-const BRACKET_FOOTER_HEIGHT = 130;
+const BRACKET_TREE_TOP = 390;
+const BRACKET_TREE_FOOTER = 260;
+const BRACKET_CARD_WIDTH = 200;
+const BRACKET_CARD_HEIGHT = 58;
+const BRACKET_SIDE_MARGIN = 34;
+const BRACKET_CHAMPION_WIDTH = 340;
+const BRACKET_CHAMPION_HEIGHT = 210;
+
+type BracketSide = 'left' | 'right';
+
+interface BracketTreeSide {
+  readonly side: BracketSide;
+  readonly levels: readonly (readonly Skin[])[];
+  readonly xPositions: readonly number[];
+  readonly yPositions: readonly (readonly number[])[];
+}
 
 export function deriveTournamentResult(state: TournamentState): TournamentResult {
   if (state.phase !== 'complete' || !state.champion || !state.runnerUp) {
@@ -286,31 +298,275 @@ export async function buildShareImage(state: TournamentState): Promise<Blob> {
   return canvasToJpeg(canvas);
 }
 
+function getBracketLeafGap(bracketSize: number): number {
+  if (bracketSize <= 16) return 195;
+  if (bracketSize <= 32) return 142;
+  return 104;
+}
+
+function getTierAccent(skin: Skin): string {
+  if (skin.tierRank >= 4) return '#f4c85a';
+  if (skin.tierRank >= 3) return '#d978ef';
+  return '#7ee9ee';
+}
+
+function buildBracketTreeSide(
+  rounds: readonly BracketRoundResult[],
+  side: BracketSide,
+  leafGap: number,
+): BracketTreeSide {
+  const firstRound = rounds[0];
+  const halfFirstRound = firstRound.matches.length / 2;
+  const firstRoundMatches =
+    side === 'left'
+      ? firstRound.matches.slice(0, halfFirstRound)
+      : firstRound.matches.slice(halfFirstRound);
+  const levels: Skin[][] = [
+    firstRoundMatches.flatMap((match) => [...match.skins]),
+  ];
+
+  for (let roundIndex = 0; roundIndex < rounds.length - 1; roundIndex += 1) {
+    const matches = rounds[roundIndex].matches;
+    const sideMatchCount = matches.length / 2;
+    const sideMatches =
+      side === 'left'
+        ? matches.slice(0, sideMatchCount)
+        : matches.slice(sideMatchCount);
+    levels.push(sideMatches.map((match) => match.winner));
+  }
+
+  const innerLeftX =
+    BRACKET_IMAGE_WIDTH / 2 -
+    BRACKET_CHAMPION_WIDTH / 2 -
+    BRACKET_CARD_WIDTH -
+    30;
+  const leftStep =
+    levels.length === 1
+      ? 0
+      : (innerLeftX - BRACKET_SIDE_MARGIN) / (levels.length - 1);
+  const leftXPositions = levels.map(
+    (_, levelIndex) => BRACKET_SIDE_MARGIN + levelIndex * leftStep,
+  );
+  const xPositions =
+    side === 'left'
+      ? leftXPositions
+      : leftXPositions.map(
+          (leftX) => BRACKET_IMAGE_WIDTH - leftX - BRACKET_CARD_WIDTH,
+        );
+
+  const yPositions: number[][] = [
+    levels[0].map((_, index) => BRACKET_TREE_TOP + index * leafGap),
+  ];
+  for (let levelIndex = 1; levelIndex < levels.length; levelIndex += 1) {
+    const previousY = yPositions[levelIndex - 1];
+    yPositions.push(
+      levels[levelIndex].map(
+        (_, index) =>
+          (previousY[index * 2] + previousY[index * 2 + 1]) / 2,
+      ),
+    );
+  }
+
+  return { side, levels, xPositions, yPositions };
+}
+
+function drawBracketConnector(
+  context: CanvasRenderingContext2D,
+  side: BracketSide,
+  childX: number,
+  childY: number,
+  parentX: number,
+  parentY: number,
+  highlighted: boolean,
+): void {
+  const startX =
+    side === 'left' ? childX + BRACKET_CARD_WIDTH : childX;
+  const endX =
+    side === 'left' ? parentX : parentX + BRACKET_CARD_WIDTH;
+  const elbowX = (startX + endX) / 2;
+
+  context.beginPath();
+  context.moveTo(startX, childY);
+  context.lineTo(elbowX, childY);
+  context.lineTo(elbowX, parentY);
+  context.lineTo(endX, parentY);
+  context.strokeStyle = highlighted ? '#ff4655' : '#2a3a40';
+  context.lineWidth = highlighted ? 5 : 2;
+  context.stroke();
+}
+
+function drawChampionConnector(
+  context: CanvasRenderingContext2D,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  highlighted: boolean,
+): void {
+  const elbowX = (startX + endX) / 2;
+  context.beginPath();
+  context.moveTo(startX, startY);
+  context.lineTo(elbowX, startY);
+  context.lineTo(elbowX, endY);
+  context.lineTo(endX, endY);
+  context.strokeStyle = highlighted ? '#ff4655' : '#2a3a40';
+  context.lineWidth = highlighted ? 5 : 2;
+  context.stroke();
+}
+
+function drawBracketCard(
+  context: CanvasRenderingContext2D,
+  skin: Skin,
+  thumbnail: HTMLImageElement | null,
+  x: number,
+  centerY: number,
+  advanced: boolean,
+  championPath: boolean,
+): void {
+  const y = centerY - BRACKET_CARD_HEIGHT / 2;
+  context.fillStyle = championPath
+    ? '#ff4655'
+    : advanced
+      ? '#41545a'
+      : '#202b30';
+  context.fillRect(x, y, BRACKET_CARD_WIDTH, BRACKET_CARD_HEIGHT);
+  context.fillStyle = advanced ? '#11191e' : '#0b1014';
+  context.fillRect(
+    x + 3,
+    y + 3,
+    BRACKET_CARD_WIDTH - 6,
+    BRACKET_CARD_HEIGHT - 6,
+  );
+  context.fillStyle = getTierAccent(skin);
+  context.fillRect(x + 9, y + 9, 40, BRACKET_CARD_HEIGHT - 18);
+  context.fillStyle = '#090d10';
+  context.fillRect(x + 12, y + 12, 34, BRACKET_CARD_HEIGHT - 24);
+  if (thumbnail) {
+    fitImage(
+      context,
+      thumbnail,
+      x + 13,
+      y + 13,
+      32,
+      BRACKET_CARD_HEIGHT - 26,
+    );
+  }
+
+  context.textAlign = 'left';
+  context.textBaseline = 'alphabetic';
+  context.fillStyle = advanced ? '#f2f3f1' : '#819095';
+  context.font = `${advanced ? '800' : '650'} 18px system-ui, sans-serif`;
+  context.fillText(
+    truncateText(
+      context,
+      skin.name.replace(/\s+(狂徒|幻影|正义)$/, ''),
+      BRACKET_CARD_WIDTH - 64,
+    ),
+    x + 56,
+    y + 27,
+  );
+  context.fillStyle = advanced ? '#91a2a6' : '#56666b';
+  context.font = '600 12px system-ui, sans-serif';
+  context.fillText(
+    truncateText(context, skin.tier, BRACKET_CARD_WIDTH - 64),
+    x + 56,
+    y + 45,
+  );
+}
+
+function drawBracketTreeSide(
+  context: CanvasRenderingContext2D,
+  tree: BracketTreeSide,
+  championId: string,
+  thumbnails: ReadonlyMap<string, HTMLImageElement | null>,
+): void {
+  for (let levelIndex = 1; levelIndex < tree.levels.length; levelIndex += 1) {
+    const childLevel = tree.levels[levelIndex - 1];
+    const parentLevel = tree.levels[levelIndex];
+    for (let parentIndex = 0; parentIndex < parentLevel.length; parentIndex += 1) {
+      for (const childIndex of [parentIndex * 2, parentIndex * 2 + 1]) {
+        drawBracketConnector(
+          context,
+          tree.side,
+          tree.xPositions[levelIndex - 1],
+          tree.yPositions[levelIndex - 1][childIndex],
+          tree.xPositions[levelIndex],
+          tree.yPositions[levelIndex][parentIndex],
+          childLevel[childIndex].id === championId,
+        );
+      }
+    }
+  }
+
+  tree.levels.forEach((level, levelIndex) => {
+    level.forEach((skin, index) => {
+      const nextLevel = tree.levels[levelIndex + 1];
+      const advanced =
+        !nextLevel ||
+        nextLevel[Math.floor(index / 2)]?.id === skin.id;
+      drawBracketCard(
+        context,
+        skin,
+        thumbnails.get(skin.id) ?? null,
+        tree.xPositions[levelIndex],
+        tree.yPositions[levelIndex][index],
+        advanced,
+        skin.id === championId,
+      );
+    });
+  });
+}
+
 export async function buildBracketImage(
   state: TournamentState,
 ): Promise<Blob> {
   const rounds = deriveBracketRounds(state);
+  const champion = state.champion;
+  if (!champion) {
+    throw new Error('赛事尚未完成，无法生成完整晋级图');
+  }
+  const leafGap = getBracketLeafGap(state.config.bracketSize);
+  const leavesPerSide = state.config.bracketSize / 2;
   const canvas = document.createElement('canvas');
   canvas.width = BRACKET_IMAGE_WIDTH;
   canvas.height =
-    BRACKET_HEADER_HEIGHT +
-    rounds.reduce(
-      (height, round) =>
-        height +
-        BRACKET_ROUND_HEADER_HEIGHT +
-        round.matches.length * BRACKET_MATCH_HEIGHT +
-        BRACKET_ROUND_GAP,
-      0,
-    ) +
-    BRACKET_FOOTER_HEIGHT;
+    BRACKET_TREE_TOP +
+    (leavesPerSide - 1) * leafGap +
+    BRACKET_TREE_FOOTER;
   const context = canvas.getContext('2d');
   if (!context) {
     throw new Error('当前浏览器不支持生成完整晋级图');
   }
+  const leftTree = buildBracketTreeSide(rounds, 'left', leafGap);
+  const rightTree = buildBracketTreeSide(rounds, 'right', leafGap);
+  const entrants = rounds[0].matches.flatMap((match) => [...match.skins]);
+  const [championImage, thumbnailEntries] = await Promise.all([
+    loadImage(champion.fullRender ?? champion.image),
+    Promise.all(
+      entrants.map(
+        async (skin) =>
+          [skin.id, await loadImage(skin.image)] as const,
+      ),
+    ),
+  ]);
+  const thumbnails = new Map(thumbnailEntries);
+  const championCenterY =
+    (leftTree.yPositions[0][0] + leftTree.yPositions[0].at(-1)!) / 2;
+  const championX =
+    (BRACKET_IMAGE_WIDTH - BRACKET_CHAMPION_WIDTH) / 2;
+  const championY = championCenterY - BRACKET_CHAMPION_HEIGHT / 2;
 
   context.fillStyle = '#080a0d';
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.strokeStyle = '#1b3036';
+  context.fillStyle = '#100b12';
+  context.fillRect(0, 0, canvas.width / 2, canvas.height);
+  context.fillStyle = '#071217';
+  context.fillRect(canvas.width / 2, 0, canvas.width / 2, canvas.height);
+  context.fillStyle = 'rgba(255, 70, 85, 0.035)';
+  context.fillRect(0, 0, 420, canvas.height);
+  context.fillStyle = 'rgba(126, 233, 238, 0.025)';
+  context.fillRect(canvas.width - 420, 0, 420, canvas.height);
+  context.strokeStyle = '#18282e';
   context.lineWidth = 2;
   for (let offset = -canvas.height; offset < canvas.width; offset += 180) {
     context.beginPath();
@@ -320,90 +576,145 @@ export async function buildBracketImage(
   }
 
   context.fillStyle = '#ff4655';
-  context.fillRect(72, 64, 12, 172);
-  context.textAlign = 'left';
+  context.fillRect(canvas.width / 2 - 118, 54, 236, 5);
+  context.textAlign = 'center';
   context.textBaseline = 'alphabetic';
-  context.font = '950 70px system-ui, sans-serif';
+  context.font = '950 66px system-ui, sans-serif';
   context.fillStyle = '#f6f3ef';
-  context.fillText('SKIN CUP', 116, 134);
-  context.font = '850 42px system-ui, sans-serif';
+  context.fillText('SKIN CUP', canvas.width / 2, 124);
+  context.font = '850 38px system-ui, sans-serif';
   context.fillStyle = '#7ee9ee';
-  context.fillText('完整淘汰赛晋级图', 116, 196);
-  context.font = '650 25px system-ui, sans-serif';
+  context.fillText(
+    `${state.config.label} · 皮肤淘汰赛`,
+    canvas.width / 2,
+    181,
+  );
+  context.font = '650 22px system-ui, sans-serif';
   context.fillStyle = '#9eacaf';
   context.fillText(
-    `${state.config.label} · ${state.config.bracketSize} 强 · ${
+    `${state.config.bracketSize} 强完整晋级图 · ${
       state.config.bracketSize - 1
     } 场对决`,
-    116,
-    244,
+    canvas.width / 2,
+    222,
   );
-  context.textAlign = 'right';
-  context.font = '850 30px system-ui, sans-serif';
-  context.fillStyle = '#ff7b86';
-  context.fillText(
-    truncateText(context, `冠军 · ${state.champion?.name ?? ''}`, 560),
-    canvas.width - 76,
-    132,
-  );
-  context.textAlign = 'left';
 
-  let y = BRACKET_HEADER_HEIGHT;
-  for (const round of rounds) {
-    context.fillStyle = '#ff4655';
-    context.fillRect(72, y + 10, 8, 54);
-    context.font = '900 38px system-ui, sans-serif';
-    context.fillStyle = '#f6f3ef';
-    context.fillText(round.descriptor.title, 108, y + 52);
-    context.font = '650 22px system-ui, sans-serif';
-    context.fillStyle = '#7f9094';
-    context.fillText(
-      `${round.descriptor.entrantCount} 款皮肤 · ${round.descriptor.matchCount} 场`,
-      108,
-      y + 82,
+  context.font = '800 16px system-ui, sans-serif';
+  context.fillStyle = '#7f9297';
+  rounds.forEach((round, roundIndex) => {
+    const leftX =
+      leftTree.xPositions[roundIndex] + BRACKET_CARD_WIDTH / 2;
+    const rightX =
+      rightTree.xPositions[roundIndex] + BRACKET_CARD_WIDTH / 2;
+    context.fillText(round.descriptor.title, leftX, BRACKET_TREE_TOP - 62);
+    context.fillText(round.descriptor.title, rightX, BRACKET_TREE_TOP - 62);
+  });
+
+  const leftFinalist = leftTree.levels.at(-1)![0];
+  const rightFinalist = rightTree.levels.at(-1)![0];
+  const leftFinalistX = leftTree.xPositions.at(-1)!;
+  const rightFinalistX = rightTree.xPositions.at(-1)!;
+  const leftFinalistY = leftTree.yPositions.at(-1)![0];
+  const rightFinalistY = rightTree.yPositions.at(-1)![0];
+  drawChampionConnector(
+    context,
+    leftFinalistX + BRACKET_CARD_WIDTH,
+    leftFinalistY,
+    championX,
+    championCenterY,
+    leftFinalist.id === champion.id,
+  );
+  drawChampionConnector(
+    context,
+    rightFinalistX,
+    rightFinalistY,
+    championX + BRACKET_CHAMPION_WIDTH,
+    championCenterY,
+    rightFinalist.id === champion.id,
+  );
+
+  drawBracketTreeSide(context, leftTree, champion.id, thumbnails);
+  drawBracketTreeSide(context, rightTree, champion.id, thumbnails);
+
+  context.fillStyle = '#ff4655';
+  context.fillRect(
+    championX - 5,
+    championY - 5,
+    BRACKET_CHAMPION_WIDTH + 10,
+    BRACKET_CHAMPION_HEIGHT + 10,
+  );
+  context.fillStyle = '#0e151a';
+  context.fillRect(
+    championX,
+    championY,
+    BRACKET_CHAMPION_WIDTH,
+    BRACKET_CHAMPION_HEIGHT,
+  );
+  if (championImage) {
+    fitImage(
+      context,
+      championImage,
+      championX + 12,
+      championY + 12,
+      BRACKET_CHAMPION_WIDTH - 24,
+      BRACKET_CHAMPION_HEIGHT - 24,
     );
-    y += BRACKET_ROUND_HEADER_HEIGHT;
-
-    for (const match of round.matches) {
-      context.fillStyle =
-        match.matchNumber % 2 === 0 ? '#11171b' : '#0e1317';
-      context.fillRect(72, y, canvas.width - 144, BRACKET_MATCH_HEIGHT - 8);
-      context.fillStyle = '#1f3036';
-      context.fillRect(72, y, 126, BRACKET_MATCH_HEIGHT - 8);
-      context.font = '800 21px system-ui, sans-serif';
-      context.fillStyle = '#7ee9ee';
-      context.fillText(`第 ${match.matchNumber} 场`, 94, y + 47);
-
-      context.font = '700 25px system-ui, sans-serif';
-      context.fillStyle = '#d8dcda';
-      context.fillText(
-        truncateText(
-          context,
-          `${match.skins[0].name}  VS  ${match.skins[1].name}`,
-          700,
-        ),
-        232,
-        y + 34,
-      );
-      context.font = '800 22px system-ui, sans-serif';
-      context.fillStyle = '#ff7b86';
-      context.fillText(
-        truncateText(context, `胜者 · ${match.winner.name}`, 700),
-        232,
-        y + 66,
-      );
-
-      y += BRACKET_MATCH_HEIGHT;
-    }
-
-    y += BRACKET_ROUND_GAP;
+  } else {
+    context.fillStyle = '#172126';
+    context.fillRect(
+      championX + 12,
+      championY + 12,
+      BRACKET_CHAMPION_WIDTH - 24,
+      BRACKET_CHAMPION_HEIGHT - 24,
+    );
+    context.fillStyle = '#9db2b5';
+    context.font = '650 21px system-ui, sans-serif';
+    context.fillText(
+      '冠军图片暂不可用',
+      BRACKET_IMAGE_WIDTH / 2,
+      championCenterY + 7,
+    );
   }
 
   context.fillStyle = '#ff4655';
+  context.fillRect(
+    BRACKET_IMAGE_WIDTH / 2 - 132,
+    championY + BRACKET_CHAMPION_HEIGHT + 24,
+    264,
+    46,
+  );
+  context.fillStyle = '#ffffff';
+  context.font = '900 20px system-ui, sans-serif';
+  context.fillText(
+    '冠军 · CHAMPION',
+    BRACKET_IMAGE_WIDTH / 2,
+    championY + BRACKET_CHAMPION_HEIGHT + 55,
+  );
+  context.fillStyle = '#f6f3ef';
+  context.font = '900 30px system-ui, sans-serif';
+  context.fillText(
+    truncateText(context, champion.name, 440),
+    BRACKET_IMAGE_WIDTH / 2,
+    championY + BRACKET_CHAMPION_HEIGHT + 112,
+  );
+  context.fillStyle = '#7ee9ee';
+  context.font = '700 17px system-ui, sans-serif';
+  context.fillText(
+    `${champion.tier} · ${state.config.label} 皮肤之巅`,
+    BRACKET_IMAGE_WIDTH / 2,
+    championY + BRACKET_CHAMPION_HEIGHT + 145,
+  );
+
+  context.fillStyle = '#ff4655';
   context.fillRect(72, canvas.height - 82, canvas.width - 144, 4);
+  context.textAlign = 'left';
   context.font = '500 20px system-ui, sans-serif';
   context.fillStyle = '#809195';
-  context.fillText('由 Skin Cup 本地赛事生成', 72, canvas.height - 40);
+  context.fillText(
+    `由 Skin Cup 生成 · valorant-cup.dosthrk.com`,
+    72,
+    canvas.height - 40,
+  );
 
   return canvasToJpeg(canvas);
 }

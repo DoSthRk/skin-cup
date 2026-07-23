@@ -241,23 +241,42 @@ it('creates a JPEG canvas at quality 0.92 with an anonymous remote image', async
   expect(context.drawImage).toHaveBeenCalled();
 });
 
-it('draws every formal knockout round and winner into a complete bracket JPEG', async () => {
+it('draws a portrait, mirrored knockout tree that converges on the champion', async () => {
   const state = completedSheriffState();
 
   const blob = await buildBracketImage(state);
 
   expect(blob.type).toBe('image/jpeg');
-  expect(exportedCanvasSizes.at(-1)).toMatchObject({ width: 1440 });
+  expect(exportedCanvasSizes.at(-1)).toEqual(
+    expect.objectContaining({ width: 1440 }),
+  );
+  expect(exportedCanvasSizes.at(-1)!.height).toBeGreaterThan(
+    exportedCanvasSizes.at(-1)!.width,
+  );
   for (const title of ['1/8 决赛', '1/4 决赛', '半决赛', '决赛']) {
     expect(
       context.fillText.mock.calls.some(([text]) => text === title),
     ).toBe(true);
   }
+  expect(context.fillText).toHaveBeenCalledWith(
+    '冠军 · CHAMPION',
+    expect.any(Number),
+    expect.any(Number),
+  );
   expect(
-    context.fillText.mock.calls.filter(([text]) =>
-      String(text).startsWith('胜者 · '),
+    loadedImages.some(
+      ({ src }) => src === (state.champion?.fullRender ?? state.champion?.image),
     ),
-  ).toHaveLength(15);
+  ).toBe(true);
+  expect(loadedImages.map(({ src }) => src)).toEqual(
+    expect.arrayContaining(
+      state.bracket[0]
+        .flatMap((match) => match.skins)
+        .map((skin) => skin.image)
+        .filter((url): url is string => Boolean(url)),
+    ),
+  );
+  expect(context.stroke).toHaveBeenCalled();
 });
 
 it('makes a 32-entry bracket image taller than a 16-entry bracket image', async () => {
@@ -556,8 +575,9 @@ it('ignores a hanging generation after a new completed tournament replaces it', 
     await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS);
   });
   expect(screen.getByRole('img', { name: '正义冠军分享图预览' })).toBeInTheDocument();
+  expect(screen.getByRole('img', { name: '正义完整晋级图预览' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '分享冠军图' })).toBeEnabled();
-  expect(URL.createObjectURL).toHaveBeenCalledTimes(3);
+  expect(URL.createObjectURL).toHaveBeenCalledTimes(2);
 });
 
 it('does not publish a hanging generation result after unmount', async () => {
