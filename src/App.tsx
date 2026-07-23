@@ -6,6 +6,7 @@ import { RevivalStage } from './components/RevivalStage';
 import { TopBar } from './components/TopBar';
 import { WeaponSelect } from './components/WeaponSelect';
 import { weaponConfigs } from './domain/catalog';
+import { weaponCardArtwork } from './data/home-brand';
 import { skinCatalog } from './data/generated-skin-catalog';
 import {
   chooseWinner,
@@ -25,6 +26,7 @@ const weaponOptions = weaponOrder.map((id) => ({
   id,
   label: weaponConfigs[id].label,
   count: skinCatalog.filter((skin) => skin.weapon === id).length,
+  artwork: weaponCardArtwork[id],
 }));
 
 function freshSeed(): string {

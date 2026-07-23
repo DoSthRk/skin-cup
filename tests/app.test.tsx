@@ -72,8 +72,18 @@ afterEach(() => {
 it('shows enabled launch controls with the exact generated counts', () => {
   render(<App />);
 
-  expect(screen.getByRole('heading', { name: '皮肤之巅' })).toBeInTheDocument();
-  expect(screen.getByText('valorant-cup')).toBeInTheDocument();
+  expect(
+    screen.getByRole('heading', { name: 'VALORANT-CUP' }),
+  ).toBeInTheDocument();
+  expect(screen.getByText('决战皮肤之巅')).toBeInTheDocument();
+  expect(
+    screen.getByRole('img', { name: 'VALORANT-CUP 赛事标志' }),
+  ).toBeInTheDocument();
+  for (const skinName of ['光明哨兵 狂徒', '离子武器 幻影', '奇点 正义']) {
+    expect(
+      screen.getByRole('img', { name: `${skinName} 代表皮肤` }),
+    ).toBeInTheDocument();
+  }
   expect(screen.getByRole('button', { name: /狂徒.*42/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /幻影.*36/ })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /正义.*24/ })).toBeInTheDocument();
@@ -213,7 +223,9 @@ it('returns to the home screen and clears the current tournament', () => {
 
   fireEvent.click(screen.getByRole('button', { name: '回到主页' }));
 
-  expect(screen.getByRole('heading', { name: '皮肤之巅' })).toBeInTheDocument();
+  expect(
+    screen.getByRole('heading', { name: 'VALORANT-CUP' }),
+  ).toBeInTheDocument();
   expect(loadTournament()).toBeNull();
 });
 
