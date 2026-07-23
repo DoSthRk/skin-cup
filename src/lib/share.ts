@@ -13,6 +13,8 @@ export interface ChampionPathStep {
 export interface TournamentResult {
   readonly champion: Skin;
   readonly runnerUp: Skin;
+  readonly thirdPlace: Skin;
+  readonly fourthPlace: Skin;
   readonly semifinalists: readonly Skin[];
   readonly path: readonly ChampionPathStep[];
 }
@@ -62,6 +64,22 @@ export function deriveTournamentResult(state: TournamentState): TournamentResult
     throw new Error('赛事对阵数据不完整，无法推导四强');
   }
 
+  const championSemifinal = semifinalRound.find(
+    (match) => match.winner?.id === champion.id,
+  );
+  const runnerUpSemifinal = semifinalRound.find(
+    (match) => match.winner?.id === runnerUp.id,
+  );
+  const thirdPlace = championSemifinal?.skins.find(
+    (skin) => skin.id !== champion.id,
+  );
+  const fourthPlace = runnerUpSemifinal?.skins.find(
+    (skin) => skin.id !== runnerUp.id,
+  );
+  if (!thirdPlace || !fourthPlace) {
+    throw new Error('赛事对阵数据不完整，无法推导四强');
+  }
+
   const path = state.bracket.map((round, roundIndex): ChampionPathStep => {
     const match = round.find(({ skins }) =>
       skins.some((skin) => skin.id === champion.id),
@@ -81,6 +99,8 @@ export function deriveTournamentResult(state: TournamentState): TournamentResult
   return {
     champion,
     runnerUp,
+    thirdPlace,
+    fourthPlace,
     semifinalists,
     path,
   };
@@ -223,6 +243,50 @@ function canvasToJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
   });
 }
 
+function drawRankingCard(
+  context: CanvasRenderingContext2D,
+  skin: Skin,
+  image: HTMLImageElement | null,
+  label: string,
+  accent: string,
+  x: number,
+  y: number,
+): void {
+  const width = 458;
+  const height = 108;
+
+  context.fillStyle = '#11161b';
+  context.fillRect(x, y, width, height);
+  context.fillStyle = accent;
+  context.fillRect(x, y, 6, height);
+  context.fillStyle = '#0a0e12';
+  context.fillRect(x + 16, y + 14, 112, 80);
+
+  if (image) {
+    fitImage(context, image, x + 20, y + 18, 104, 72);
+  } else {
+    context.fillStyle = '#263238';
+    context.font = '700 14px system-ui, sans-serif';
+    context.textAlign = 'center';
+    context.fillText(`${label}图片暂不可用`, x + 72, y + 59);
+  }
+
+  context.textAlign = 'left';
+  context.fillStyle = accent;
+  context.font = '800 18px system-ui, sans-serif';
+  context.fillText(label, x + 148, y + 31);
+  context.fillStyle = '#f6f3ef';
+  context.font = '850 23px system-ui, sans-serif';
+  context.fillText(
+    truncateText(context, skin.name, width - 170),
+    x + 148,
+    y + 67,
+  );
+  context.fillStyle = '#87979c';
+  context.font = '650 15px system-ui, sans-serif';
+  context.fillText(skin.tier, x + 148, y + 92);
+}
+
 export async function buildShareImage(state: TournamentState): Promise<Blob> {
   const result = deriveTournamentResult(state);
   const canvas = document.createElement('canvas');
@@ -256,7 +320,16 @@ export async function buildShareImage(state: TournamentState): Promise<Blob> {
 
   context.fillStyle = '#11161b';
   context.fillRect(68, 282, 944, 484);
-  const championImage = await loadImage(result.champion.fullRender ?? result.champion.image);
+  const ranking = [
+    { label: '冠军', skin: result.champion, accent: '#ff4655' },
+    { label: '亚军', skin: result.runnerUp, accent: '#7ee9ee' },
+    { label: '季军', skin: result.thirdPlace, accent: '#f4c85a' },
+    { label: '殿军', skin: result.fourthPlace, accent: '#9aa8ac' },
+  ] as const;
+  const rankingImages = await Promise.all(
+    ranking.map(({ skin }) => loadImage(skin.fullRender ?? skin.image)),
+  );
+  const championImage = rankingImages[0];
   if (championImage) {
     fitImage(context, championImage, 100, 310, 880, 400);
   } else {
@@ -270,30 +343,35 @@ export async function buildShareImage(state: TournamentState): Promise<Blob> {
 
   context.textAlign = 'left';
   context.fillStyle = '#ff4655';
-  context.font = '800 28px system-ui, sans-serif';
-  context.fillText('冠军', 72, 834);
+  context.font = '800 25px system-ui, sans-serif';
+  context.fillText('冠军', 72, 810);
   context.fillStyle = '#f6f3ef';
-  context.font = '900 58px system-ui, sans-serif';
-  drawWrappedText(context, result.champion.name, 72, 904, 930, 66, 2);
+  context.font = '900 50px system-ui, sans-serif';
+  drawWrappedText(context, result.champion.name, 72, 866, 930, 54, 2);
   context.fillStyle = '#7ee9ee';
-  context.font = '700 27px system-ui, sans-serif';
-  context.fillText(result.champion.tier, 72, 1020);
+  context.font = '700 23px system-ui, sans-serif';
+  context.fillText(result.champion.tier, 72, 956);
 
   context.fillStyle = '#8e9ca0';
-  context.font = '700 24px system-ui, sans-serif';
-  context.fillText('夺冠之路', 72, 1082);
-  context.fillStyle = '#e6e4e0';
-  context.font = '600 25px system-ui, sans-serif';
-  const pathSummary = result.path
-    .map(({ label, opponent }) => `${label} 胜 ${opponent.name}`)
-    .join('  ·  ');
-  drawWrappedText(context, pathSummary, 72, 1130, 936, 38, 3);
+  context.font = '800 22px system-ui, sans-serif';
+  context.fillText('最终排名', 72, 995);
+  ranking.forEach(({ label, skin, accent }, index) => {
+    drawRankingCard(
+      context,
+      skin,
+      rankingImages[index],
+      label,
+      accent,
+      index % 2 === 0 ? 68 : 554,
+      index < 2 ? 1016 : 1138,
+    );
+  });
 
   context.fillStyle = '#ff4655';
-  context.fillRect(72, 1280, 936, 4);
+  context.fillRect(72, 1282, 936, 4);
   context.fillStyle = '#809195';
   context.font = '500 20px system-ui, sans-serif';
-  context.fillText('由 Skin Cup 本地赛事生成', 72, 1320);
+  context.fillText('由 Skin Cup 本地赛事生成', 72, 1322);
 
   return canvasToJpeg(canvas);
 }

@@ -201,12 +201,27 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('derives the champion, runner-up, four semifinalists and complete champion path', () => {
+it('derives the champion, runner-up, third place, fourth place and complete champion path', () => {
   const state = completedSheriffState();
   const result = deriveTournamentResult(state);
+  const semifinalRound = state.bracket.at(-2)!;
+  const championSemifinal = semifinalRound.find(
+    (match) => match.winner?.id === state.champion?.id,
+  )!;
+  const runnerUpSemifinal = semifinalRound.find(
+    (match) => match.winner?.id === state.runnerUp?.id,
+  )!;
+  const expectedThirdPlace = championSemifinal.skins.find(
+    (skin) => skin.id !== state.champion?.id,
+  );
+  const expectedFourthPlace = runnerUpSemifinal.skins.find(
+    (skin) => skin.id !== state.runnerUp?.id,
+  );
 
   expect(result.champion).toBe(state.champion);
   expect(result.runnerUp).toBe(state.runnerUp);
+  expect(result.thirdPlace).toBe(expectedThirdPlace);
+  expect(result.fourthPlace).toBe(expectedFourthPlace);
   expect(result.semifinalists.map((skin) => skin.id)).toEqual(
     state.bracket.at(-2)?.flatMap((match) => match.skins.map((skin) => skin.id)),
   );
@@ -224,6 +239,7 @@ it('rejects a tournament that is not complete', () => {
 
 it('creates a JPEG canvas at quality 0.92 with an anonymous remote image', async () => {
   const state = completedSheriffState();
+  const result = deriveTournamentResult(state);
 
   const blob = await buildShareImage(state);
 
@@ -238,6 +254,30 @@ it('creates a JPEG canvas at quality 0.92 with an anonymous remote image', async
     crossOrigin: 'anonymous',
     src: state.champion?.fullRender ?? state.champion?.image,
   });
+  expect(context.fillText).not.toHaveBeenCalledWith(
+    '夺冠之路',
+    expect.any(Number),
+    expect.any(Number),
+  );
+  for (const label of ['冠军', '亚军', '季军', '殿军']) {
+    expect(context.fillText).toHaveBeenCalledWith(
+      label,
+      expect.any(Number),
+      expect.any(Number),
+    );
+  }
+  expect(loadedImages.map(({ src }) => src)).toEqual(
+    expect.arrayContaining(
+      [
+        result.champion,
+        result.runnerUp,
+        result.thirdPlace,
+        result.fourthPlace,
+      ]
+        .map((skin) => skin.fullRender ?? skin.image)
+        .filter((url): url is string => Boolean(url)),
+    ),
+  );
   expect(context.drawImage).toHaveBeenCalled();
 });
 
