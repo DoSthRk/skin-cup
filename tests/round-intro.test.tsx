@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { KnockoutStage } from '../src/components/KnockoutStage';
 import {
   ROUND_INTRO_DURATION_MS,
+  ROUND_INTRO_EXIT_MS,
   RoundIntro,
 } from '../src/components/RoundIntro';
 import { skinCatalog } from '../src/data/generated-skin-catalog';
@@ -34,12 +35,13 @@ it('announces the formal round name and completes after the configured duration'
   expect(screen.getByRole('status')).toHaveTextContent('16 款皮肤 · 8 场对决');
 
   act(() => {
-    vi.advanceTimersByTime(ROUND_INTRO_DURATION_MS - 1);
+    vi.advanceTimersByTime(ROUND_INTRO_DURATION_MS - ROUND_INTRO_EXIT_MS);
   });
+  expect(screen.getByRole('status')).toHaveClass('round-intro--exiting');
   expect(onComplete).not.toHaveBeenCalled();
 
   act(() => {
-    vi.advanceTimersByTime(1);
+    vi.advanceTimersByTime(ROUND_INTRO_EXIT_MS);
   });
   expect(onComplete).toHaveBeenCalledOnce();
 });

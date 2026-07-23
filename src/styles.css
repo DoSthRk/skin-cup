@@ -279,6 +279,10 @@ strong {
   font-weight: 650;
 }
 
+.round-intro--exiting {
+  animation: round-intro-exit 260ms ease-in both;
+}
+
 @keyframes round-intro-enter {
   from {
     opacity: 0;
@@ -288,6 +292,18 @@ strong {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes round-intro-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.985);
   }
 }
 
@@ -644,7 +660,8 @@ strong {
     animation-iteration-count: 1 !important;
   }
 
-  .round-intro {
+  .round-intro,
+  .round-intro.round-intro--exiting {
     animation: none;
   }
 }
