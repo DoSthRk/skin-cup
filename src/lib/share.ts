@@ -1,5 +1,8 @@
 import type { Skin, TournamentState } from '../domain/types';
-import { getRoundDescriptor } from '../domain/bracket';
+import {
+  deriveBracketRounds,
+  getRoundDescriptor,
+} from '../domain/bracket';
 
 export interface ChampionPathStep {
   readonly label: string;
@@ -17,6 +20,13 @@ export type ShareImageOutcome = 'shared' | 'downloaded' | 'cancelled';
 
 export const SHARE_IMAGE_TIMEOUT_MS = 8_000;
 export const DOWNLOAD_CLEANUP_DELAY_MS = 1_000;
+export const BRACKET_IMAGE_WIDTH = 1_440;
+
+const BRACKET_HEADER_HEIGHT = 320;
+const BRACKET_ROUND_HEADER_HEIGHT = 96;
+const BRACKET_MATCH_HEIGHT = 88;
+const BRACKET_ROUND_GAP = 44;
+const BRACKET_FOOTER_HEIGHT = 130;
 
 export function deriveTournamentResult(state: TournamentState): TournamentResult {
   if (state.phase !== 'complete' || !state.champion || !state.runnerUp) {
@@ -157,6 +167,25 @@ function drawWrappedText(
   lines.forEach((line, index) => context.fillText(line, x, y + index * lineHeight));
 }
 
+function truncateText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string {
+  if (context.measureText(text).width <= maxWidth) {
+    return text;
+  }
+
+  let truncated = text;
+  while (
+    truncated.length > 0 &&
+    context.measureText(`${truncated}…`).width > maxWidth
+  ) {
+    truncated = truncated.slice(0, -1);
+  }
+  return `${truncated}…`;
+}
+
 function canvasToJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
   if (typeof canvas.toBlob !== 'function') {
     return Promise.reject(new Error('当前浏览器不支持导出分享图片'));
@@ -248,6 +277,128 @@ export async function buildShareImage(state: TournamentState): Promise<Blob> {
   context.fillStyle = '#809195';
   context.font = '500 20px system-ui, sans-serif';
   context.fillText('由 Skin Cup 本地赛事生成', 72, 1320);
+
+  return canvasToJpeg(canvas);
+}
+
+export async function buildBracketImage(
+  state: TournamentState,
+): Promise<Blob> {
+  const rounds = deriveBracketRounds(state);
+  const canvas = document.createElement('canvas');
+  canvas.width = BRACKET_IMAGE_WIDTH;
+  canvas.height =
+    BRACKET_HEADER_HEIGHT +
+    rounds.reduce(
+      (height, round) =>
+        height +
+        BRACKET_ROUND_HEADER_HEIGHT +
+        round.matches.length * BRACKET_MATCH_HEIGHT +
+        BRACKET_ROUND_GAP,
+      0,
+    ) +
+    BRACKET_FOOTER_HEIGHT;
+  const context = canvas.getContext('2d');
+  if (!context) {
+    throw new Error('当前浏览器不支持生成完整晋级图');
+  }
+
+  context.fillStyle = '#080a0d';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.strokeStyle = '#1b3036';
+  context.lineWidth = 2;
+  for (let offset = -canvas.height; offset < canvas.width; offset += 180) {
+    context.beginPath();
+    context.moveTo(offset, 0);
+    context.lineTo(offset + canvas.height, canvas.height);
+    context.stroke();
+  }
+
+  context.fillStyle = '#ff4655';
+  context.fillRect(72, 64, 12, 172);
+  context.textAlign = 'left';
+  context.textBaseline = 'alphabetic';
+  context.font = '950 70px system-ui, sans-serif';
+  context.fillStyle = '#f6f3ef';
+  context.fillText('SKIN CUP', 116, 134);
+  context.font = '850 42px system-ui, sans-serif';
+  context.fillStyle = '#7ee9ee';
+  context.fillText('完整淘汰赛晋级图', 116, 196);
+  context.font = '650 25px system-ui, sans-serif';
+  context.fillStyle = '#9eacaf';
+  context.fillText(
+    `${state.config.label} · ${state.config.bracketSize} 强 · ${
+      state.config.bracketSize - 1
+    } 场对决`,
+    116,
+    244,
+  );
+  context.textAlign = 'right';
+  context.font = '850 30px system-ui, sans-serif';
+  context.fillStyle = '#ff7b86';
+  context.fillText(
+    truncateText(context, `冠军 · ${state.champion?.name ?? ''}`, 560),
+    canvas.width - 76,
+    132,
+  );
+  context.textAlign = 'left';
+
+  let y = BRACKET_HEADER_HEIGHT;
+  for (const round of rounds) {
+    context.fillStyle = '#ff4655';
+    context.fillRect(72, y + 10, 8, 54);
+    context.font = '900 38px system-ui, sans-serif';
+    context.fillStyle = '#f6f3ef';
+    context.fillText(round.descriptor.title, 108, y + 52);
+    context.font = '650 22px system-ui, sans-serif';
+    context.fillStyle = '#7f9094';
+    context.fillText(
+      `${round.descriptor.entrantCount} 款皮肤 · ${round.descriptor.matchCount} 场`,
+      108,
+      y + 82,
+    );
+    y += BRACKET_ROUND_HEADER_HEIGHT;
+
+    for (const match of round.matches) {
+      context.fillStyle =
+        match.matchNumber % 2 === 0 ? '#11171b' : '#0e1317';
+      context.fillRect(72, y, canvas.width - 144, BRACKET_MATCH_HEIGHT - 8);
+      context.fillStyle = '#1f3036';
+      context.fillRect(72, y, 126, BRACKET_MATCH_HEIGHT - 8);
+      context.font = '800 21px system-ui, sans-serif';
+      context.fillStyle = '#7ee9ee';
+      context.fillText(`第 ${match.matchNumber} 场`, 94, y + 47);
+
+      context.font = '700 25px system-ui, sans-serif';
+      context.fillStyle = '#d8dcda';
+      context.fillText(
+        truncateText(
+          context,
+          `${match.skins[0].name}  VS  ${match.skins[1].name}`,
+          700,
+        ),
+        232,
+        y + 34,
+      );
+      context.font = '800 22px system-ui, sans-serif';
+      context.fillStyle = '#ff7b86';
+      context.fillText(
+        truncateText(context, `胜者 · ${match.winner.name}`, 700),
+        232,
+        y + 66,
+      );
+
+      y += BRACKET_MATCH_HEIGHT;
+    }
+
+    y += BRACKET_ROUND_GAP;
+  }
+
+  context.fillStyle = '#ff4655';
+  context.fillRect(72, canvas.height - 82, canvas.width - 144, 4);
+  context.font = '500 20px system-ui, sans-serif';
+  context.fillStyle = '#809195';
+  context.fillText('由 Skin Cup 本地赛事生成', 72, canvas.height - 40);
 
   return canvasToJpeg(canvas);
 }

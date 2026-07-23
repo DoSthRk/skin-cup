@@ -5,6 +5,7 @@ import { skinCatalog } from '../src/data/generated-skin-catalog';
 import { weaponConfigs } from '../src/domain/catalog';
 import {
   buildShareImage,
+  buildBracketImage,
   DOWNLOAD_CLEANUP_DELAY_MS,
   deriveTournamentResult,
   downloadShareImage,
@@ -23,6 +24,37 @@ function completedSheriffState(seed = 'completed-sheriff-test'): TournamentState
   let state = createTournament(
     skinCatalog.filter((skin) => skin.weapon === 'sheriff'),
     weaponConfigs.sheriff,
+    seed,
+  );
+
+  while (state.phase === 'groups') {
+    state = confirmGroupPick(
+      state,
+      state.groups[state.groupIndex]
+        .slice(0, state.config.picksPerGroup)
+        .map((skin) => skin.id),
+    );
+  }
+
+  state = confirmWildcards(
+    state,
+    state.losers.slice(0, state.config.wildcardSlots).map((skin) => skin.id),
+  );
+
+  while (state.phase === 'knockout') {
+    state = chooseWinner(
+      state,
+      state.bracket[state.roundIndex][state.matchIndex].skins[0].id,
+    );
+  }
+
+  return state;
+}
+
+function completedVandalState(seed = 'completed-vandal-test'): TournamentState {
+  let state = createTournament(
+    skinCatalog.filter((skin) => skin.weapon === 'vandal'),
+    weaponConfigs.vandal,
     seed,
   );
 
@@ -74,6 +106,7 @@ let loadedImages: Array<{ crossOrigin: string | null; src: string }> = [];
 let imageShouldFail = false;
 let imageShouldHang = false;
 let mockImages: MockImage[] = [];
+let exportedCanvasSizes: Array<{ width: number; height: number }> = [];
 
 class MockImage {
   crossOrigin: string | null = null;
@@ -112,6 +145,7 @@ beforeEach(() => {
   imageShouldFail = false;
   imageShouldHang = false;
   mockImages = [];
+  exportedCanvasSizes = [];
   vi.clearAllMocks();
   vi.useRealTimers();
   vi.stubGlobal('Image', class extends MockImage {
@@ -123,9 +157,12 @@ beforeEach(() => {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
     context as unknown as CanvasRenderingContext2D,
   );
-  vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback, type) => {
-    callback(new Blob(['x'.repeat(128)], { type: type ?? 'image/png' }));
-  });
+  vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(
+    function (this: HTMLCanvasElement, callback, type) {
+      exportedCanvasSizes.push({ width: this.width, height: this.height });
+      callback(new Blob(['x'.repeat(128)], { type: type ?? 'image/png' }));
+    },
+  );
   Object.defineProperty(URL, 'createObjectURL', {
     configurable: true,
     value: vi.fn(() => 'blob:skin-cup'),
@@ -188,6 +225,36 @@ it('creates a JPEG canvas at quality 0.92 with an anonymous remote image', async
     src: state.champion?.fullRender ?? state.champion?.image,
   });
   expect(context.drawImage).toHaveBeenCalled();
+});
+
+it('draws every formal knockout round and winner into a complete bracket JPEG', async () => {
+  const state = completedSheriffState();
+
+  const blob = await buildBracketImage(state);
+
+  expect(blob.type).toBe('image/jpeg');
+  expect(exportedCanvasSizes.at(-1)).toMatchObject({ width: 1440 });
+  for (const title of ['1/8 决赛', '1/4 决赛', '半决赛', '决赛']) {
+    expect(
+      context.fillText.mock.calls.some(([text]) => text === title),
+    ).toBe(true);
+  }
+  expect(
+    context.fillText.mock.calls.filter(([text]) =>
+      String(text).startsWith('胜者 · '),
+    ),
+  ).toHaveLength(15);
+});
+
+it('makes a 32-entry bracket image taller than a 16-entry bracket image', async () => {
+  await buildBracketImage(completedSheriffState());
+  const sheriffHeight = exportedCanvasSizes.at(-1)?.height ?? 0;
+
+  await buildBracketImage(completedVandalState());
+  const vandalHeight = exportedCanvasSizes.at(-1)?.height ?? 0;
+
+  expect(sheriffHeight).toBeGreaterThan(0);
+  expect(vandalHeight).toBeGreaterThan(sheriffHeight);
 });
 
 it('still creates the share image with an accessible-looking text fallback when art fails', async () => {
