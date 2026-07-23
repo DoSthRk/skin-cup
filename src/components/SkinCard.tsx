@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { localizeEffectLabel } from '../domain/effects';
 import type { Skin } from '../domain/types';
 
 interface SkinCardProps {
@@ -45,7 +46,7 @@ export function SkinCard({ skin, selected = false, onSelect }: SkinCardProps) {
       <span className="skin-card__tier">{skin.tier}</span>
       <span className="skin-card__effects" aria-label="特效标签">
         {skin.effects.filter(Boolean).map((effect) => (
-          <span key={effect}>{effect}</span>
+          <span key={effect}>{localizeEffectLabel(effect)}</span>
         ))}
       </span>
     </button>
