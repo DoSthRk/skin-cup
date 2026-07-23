@@ -70,6 +70,19 @@ function sheriffSecondRound(): TournamentState {
   return state;
 }
 
+function confirmNextGroup(state: TournamentState, offset = 0): TournamentState {
+  const group = state.groups[state.groupIndex];
+  const selected = Array.from(
+    { length: state.config.picksPerGroup },
+    (_value, index) => group[(index + offset) % group.length].id,
+  );
+  return confirmGroupPick(state, selected);
+}
+
+function afterThreeVandalGroups(): TournamentState {
+  return confirmNextGroup(confirmNextGroup(confirmNextGroup(vandalState())));
+}
+
 function expectStoredStateRejected(state: unknown): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state }));
   expect(loadTournament()).toBeNull();
@@ -412,6 +425,45 @@ it('rejects unreachable revival and knockout provenance in compact history', () 
           }
         : snapshot,
     ),
+  });
+});
+
+it('rejects compact history snapshots in the wrong order', () => {
+  const state = afterThreeVandalGroups();
+
+  expectStoredStateRejected({
+    ...state,
+    history: [state.history[0], state.history[2], state.history[1]],
+  });
+});
+
+it('rejects a duplicated compact history snapshot', () => {
+  const state = afterThreeVandalGroups();
+
+  expectStoredStateRejected({
+    ...state,
+    history: [state.history[0], state.history[1], state.history[1], state.history[2]],
+  });
+});
+
+it('rejects a missing compact history snapshot', () => {
+  const state = afterThreeVandalGroups();
+
+  expectStoredStateRejected({
+    ...state,
+    history: [state.history[0], state.history[2]],
+  });
+});
+
+it('rejects compact history spliced from a different valid branch', () => {
+  const branchAAfterFirst = confirmNextGroup(vandalState());
+  const branchA = confirmNextGroup(branchAAfterFirst);
+  const branchBAfterFirst = confirmNextGroup(vandalState(), 1);
+  const branchB = confirmNextGroup(branchBAfterFirst);
+
+  expectStoredStateRejected({
+    ...branchA,
+    history: [branchA.history[0], branchB.history[1]],
   });
 });
 

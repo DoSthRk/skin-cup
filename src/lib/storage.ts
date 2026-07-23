@@ -1,4 +1,10 @@
 import { weaponConfigs } from '../domain/catalog';
+import {
+  chooseWinner,
+  confirmGroupPick,
+  confirmWildcards,
+  createTournament,
+} from '../domain/tournament';
 import type {
   Skin,
   TournamentMatchSnapshot,
@@ -209,6 +215,115 @@ function stateBracketReferences(
       winnerId: match.winner?.id ?? null,
     })),
   );
+}
+
+interface TournamentCore {
+  readonly phase: TournamentPhase;
+  readonly groupIndex: number;
+  readonly qualifierIds: readonly string[];
+  readonly loserIds: readonly string[];
+  readonly wildcardPicks: readonly string[];
+  readonly bracket: readonly (readonly BracketReference[])[];
+  readonly roundIndex: number;
+  readonly matchIndex: number;
+  readonly championId: string | null;
+  readonly runnerUpId: string | null;
+}
+
+function snapshotCore(snapshot: TournamentSnapshot): TournamentCore {
+  return {
+    phase: snapshot.phase,
+    groupIndex: snapshot.groupIndex,
+    qualifierIds: snapshot.qualifierIds,
+    loserIds: snapshot.loserIds,
+    wildcardPicks: snapshot.wildcardPicks,
+    bracket: snapshot.bracket,
+    roundIndex: snapshot.roundIndex,
+    matchIndex: snapshot.matchIndex,
+    championId: snapshot.championId,
+    runnerUpId: snapshot.runnerUpId,
+  };
+}
+
+function stateCore(state: TournamentState): TournamentCore {
+  return {
+    phase: state.phase,
+    groupIndex: state.groupIndex,
+    qualifierIds: state.qualifiers.map((skin) => skin.id),
+    loserIds: state.losers.map((skin) => skin.id),
+    wildcardPicks: state.wildcardPicks,
+    bracket: stateBracketReferences(state.bracket),
+    roundIndex: state.roundIndex,
+    matchIndex: state.matchIndex,
+    championId: state.champion?.id ?? null,
+    runnerUpId: state.runnerUp?.id ?? null,
+  };
+}
+
+function advanceToward(
+  state: TournamentState,
+  target: TournamentCore,
+): TournamentState | null {
+  try {
+    let advanced: TournamentState;
+
+    if (state.phase === 'groups') {
+      const currentGroupIds = new Set(
+        state.groups[state.groupIndex].map((skin) => skin.id),
+      );
+      const existingQualifierIds = new Set(state.qualifiers.map((skin) => skin.id));
+      const selectedIds = target.qualifierIds.filter(
+        (id) => currentGroupIds.has(id) && !existingQualifierIds.has(id),
+      );
+      advanced = confirmGroupPick(state, selectedIds);
+    } else if (state.phase === 'revival') {
+      advanced = confirmWildcards(state, target.wildcardPicks);
+    } else if (state.phase === 'knockout') {
+      const winnerId = target.bracket[state.roundIndex]?.[state.matchIndex]?.winnerId;
+      if (winnerId === null || winnerId === undefined) {
+        return null;
+      }
+      advanced = chooseWinner(state, winnerId);
+    } else {
+      return null;
+    }
+
+    return { ...advanced, history: [] };
+  } catch {
+    return null;
+  }
+}
+
+function isCausalHistory(state: TournamentState): boolean {
+  try {
+    let replay = createTournament(state.entrants, state.config, state.seed);
+    const replayGroupIds = replay.groups.map((group) => group.map((skin) => skin.id));
+    const storedGroupIds = state.groups.map((group) => group.map((skin) => skin.id));
+
+    if (!sameJson(replayGroupIds, storedGroupIds)) {
+      return false;
+    }
+
+    const snapshotCores = state.history.map(snapshotCore);
+    const currentCore = stateCore(state);
+
+    for (let index = 0; index < snapshotCores.length; index += 1) {
+      if (!sameJson(stateCore(replay), snapshotCores[index])) {
+        return false;
+      }
+
+      const target = snapshotCores[index + 1] ?? currentCore;
+      const advanced = advanceToward(replay, target);
+      if (advanced === null) {
+        return false;
+      }
+      replay = advanced;
+    }
+
+    return sameJson(stateCore(replay), currentCore);
+  } catch {
+    return false;
+  }
 }
 
 function isMatchSnapshot(value: unknown, entrantIds: ReadonlySet<string>): value is TournamentMatchSnapshot {
@@ -451,7 +566,8 @@ function isTournamentState(value: unknown): value is TournamentState {
       value.bracket.length === 0 &&
       value.roundIndex === 0 &&
       value.matchIndex === 0 &&
-      value.champion === null
+      value.champion === null &&
+      isCausalHistory(state)
     );
   }
 
@@ -464,7 +580,8 @@ function isTournamentState(value: unknown): value is TournamentState {
       value.bracket.length === 0 &&
       value.roundIndex === 0 &&
       value.matchIndex === 0 &&
-      value.champion === null
+      value.champion === null &&
+      isCausalHistory(state)
     );
   }
 
@@ -488,7 +605,8 @@ function isTournamentState(value: unknown): value is TournamentState {
       currentRound
         .slice(knockoutState.matchIndex)
         .every((match) => match.winner === null) &&
-      knockoutState.champion === null
+      knockoutState.champion === null &&
+      isCausalHistory(knockoutState)
     );
   }
 
@@ -504,7 +622,8 @@ function isTournamentState(value: unknown): value is TournamentState {
     finalRound.length === 1 &&
     completeState.matchIndex === 0 &&
     finalMatch.winner?.id === completeState.champion.id &&
-    finalMatch.skins.some((skin) => skin.id === completeState.runnerUp?.id)
+    finalMatch.skins.some((skin) => skin.id === completeState.runnerUp?.id) &&
+    isCausalHistory(completeState)
   );
 }
 
