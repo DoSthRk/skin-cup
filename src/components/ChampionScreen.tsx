@@ -23,6 +23,7 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
   const [message, setMessage] = useState('先生成分享图，再使用系统分享');
   const mountedRef = useRef(true);
   const requestTokenRef = useRef(0);
+  const previewUrlRef = useRef<string | null>(null);
   const championImage = result.champion.fullRender ?? result.champion.image;
   const filename = `Skin-Cup-${state.config.label}-${result.champion.name}.jpg`;
   const resultKey = `${state.weapon}:${state.seed}:${result.champion.id}`;
@@ -32,12 +33,21 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
     return () => {
       mountedRef.current = false;
       requestTokenRef.current += 1;
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
     requestTokenRef.current += 1;
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
     setShareBlob(null);
+    setPreviewUrl(null);
     setGenerationState('idle');
     setMessage('先生成分享图，再使用系统分享');
   }, [resultKey]);
@@ -45,16 +55,6 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
   useEffect(() => {
     setChampionImageFailed(false);
   }, [result.champion.id]);
-
-  useEffect(() => {
-    if (!shareBlob) {
-      setPreviewUrl(null);
-      return undefined;
-    }
-    const url = URL.createObjectURL(shareBlob);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [shareBlob]);
 
   async function generate(): Promise<Blob | null> {
     const requestToken = requestTokenRef.current + 1;
@@ -66,9 +66,16 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
       if (!mountedRef.current || requestToken !== requestTokenRef.current) {
         return null;
       }
+      const nextPreviewUrl = URL.createObjectURL(blob);
+      const previousPreviewUrl = previewUrlRef.current;
+      previewUrlRef.current = nextPreviewUrl;
       setShareBlob(blob);
+      setPreviewUrl(nextPreviewUrl);
       setGenerationState('success');
       setMessage('分享图已生成');
+      if (previousPreviewUrl) {
+        URL.revokeObjectURL(previousPreviewUrl);
+      }
       return blob;
     } catch (error) {
       if (!mountedRef.current || requestToken !== requestTokenRef.current) {
