@@ -439,7 +439,7 @@ it('does not force a download when the user cancels native sharing', async () =>
   expect(anchorClick).not.toHaveBeenCalled();
 });
 
-it('shows the complete podium and automatically prepares both result images', async () => {
+it('shows the champion without the redundant result summaries and prepares both result images', async () => {
   const state = completedSheriffState();
   const onPlayAgain = vi.fn();
   render(<ChampionScreen state={state} onPlayAgain={onPlayAgain} />);
@@ -447,8 +447,10 @@ it('shows the complete podium and automatically prepares both result images', as
   expect(screen.getByRole('heading', { name: '冠军诞生' })).toBeInTheDocument();
   expect(screen.getByText(state.champion!.name)).toBeInTheDocument();
   expect(screen.getByText(`亚军 · ${state.runnerUp!.name}`)).toBeInTheDocument();
-  expect(screen.getAllByTestId('semifinalist')).toHaveLength(4);
-  expect(screen.getAllByTestId('path-step')).toHaveLength(4);
+  expect(screen.queryByRole('heading', { name: '四强阵容' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: '完整晋级路径' })).not.toBeInTheDocument();
+  expect(screen.queryByTestId('semifinalist')).not.toBeInTheDocument();
+  expect(screen.queryByTestId('path-step')).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: '生成分享图' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: '生成晋级图' })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: '分享冠军图' })).toBeDisabled();

@@ -612,12 +612,6 @@ strong {
   color: var(--muted);
 }
 
-.result-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.result-panel,
 .share-panel {
   display: grid;
   gap: 1rem;
@@ -626,35 +620,8 @@ strong {
   background: rgb(13 17 21 / 90%);
 }
 
-.result-panel h2,
 .share-panel h2 {
   font-size: 1.15rem;
-}
-
-.semifinalist-list,
-.champion-path {
-  display: grid;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.semifinalist-list li,
-.champion-path li {
-  display: grid;
-  grid-template-columns: minmax(3.8rem, auto) 1fr;
-  align-items: center;
-  gap: 0.75rem;
-  min-height: 52px;
-  border-top: 1px solid var(--line);
-}
-
-.semifinalist-list span,
-.champion-path span {
-  color: var(--cyan);
-  font-size: 0.78rem;
-  font-weight: 800;
 }
 
 .share-panel {
@@ -721,10 +688,6 @@ strong {
 
   .champion-hero {
     grid-template-columns: minmax(0, 1.4fr) minmax(17rem, 0.8fr);
-  }
-
-  .result-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .share-panel {

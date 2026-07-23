@@ -148,32 +148,6 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
         </div>
       </article>
 
-      <div className="result-grid">
-        <section className="result-panel" aria-labelledby="semifinalists-heading">
-          <h2 id="semifinalists-heading">四强阵容</h2>
-          <ol className="semifinalist-list">
-            {result.semifinalists.map((skin, index) => (
-              <li key={skin.id} data-testid="semifinalist">
-                <span>{skin.id === result.champion.id ? '冠军' : skin.id === result.runnerUp.id ? '亚军' : '四强'}</span>
-                <strong>{index + 1}. {skin.name}</strong>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="result-panel" aria-labelledby="path-heading">
-          <h2 id="path-heading">完整晋级路径</h2>
-          <ol className="champion-path">
-            {result.path.map((step) => (
-              <li key={`${step.label}-${step.opponent.id}`} data-testid="path-step">
-                <span>{step.label}</span>
-                <strong>胜 {step.opponent.name}</strong>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </div>
-
       <section className="share-panel" aria-labelledby="share-heading">
         <div>
           <span className="eyebrow">SHARE CARD</span>
