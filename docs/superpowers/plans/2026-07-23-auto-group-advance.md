@@ -14,8 +14,10 @@
 
 **Files:**
 - Modify: `tests/app.test.tsx`
+- Modify: `tests/storage.test.ts`
 - Modify: `src/App.tsx`
 - Modify: `src/components/GroupStage.tsx`
+- Modify: `src/lib/storage.ts`
 
 - [ ] **Step 1: Write failing UI tests**
 
@@ -41,6 +43,8 @@ it('automatically confirms a group after the second distinct pick', () => {
 ```
 
 Update the final-group tests to expect the second skin click itself to enter revival or knockout. Add an undo assertion that returning from the second group restores group 1 with the first skin still selected.
+
+Add a storage regression test that constructs the first selected state, confirms with two explicit IDs, saves it, and expects `loadTournament()` to return the same state.
 
 - [ ] **Step 2: Run the focused tests and verify RED**
 
@@ -97,7 +101,11 @@ function selectGroupSkin(skinId: string) {
 
 Pass `onToggle={selectGroupSkin}` to `GroupStage` and remove `onConfirm`.
 
-- [ ] **Step 5: Run focused tests and verify GREEN**
+- [ ] **Step 5: Accept a partial automatic-submit snapshot**
+
+In `advanceToward`, derive the completed group's selected IDs from the target qualifiers whenever the persisted snapshot contains fewer than `picksPerGroup`. Require every persisted partial pick to belong to that derived set before replaying `confirmGroupPick`.
+
+- [ ] **Step 6: Run focused tests and verify GREEN**
 
 Run:
 
@@ -135,7 +143,7 @@ Open the local production build and verify:
 - [ ] **Step 3: Commit and release**
 
 ```powershell
-git add docs/superpowers/specs/2026-07-23-auto-group-advance-design.md docs/superpowers/plans/2026-07-23-auto-group-advance.md tests/app.test.tsx src/App.tsx src/components/GroupStage.tsx
+git add docs/superpowers/specs/2026-07-23-auto-group-advance-design.md docs/superpowers/plans/2026-07-23-auto-group-advance.md tests/app.test.tsx tests/storage.test.ts src/App.tsx src/components/GroupStage.tsx src/lib/storage.ts
 git commit -m "feat: auto-advance completed groups"
 git push -u origin codex/auto-group-advance
 ```

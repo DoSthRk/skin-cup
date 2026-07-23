@@ -107,6 +107,17 @@ it('round-trips a tournament with the current schema version', () => {
   expect(loadTournament()?.history).toHaveLength(1);
 });
 
+it('round-trips an automatic group advance whose snapshot keeps the first pick', () => {
+  const initial = vandalState();
+  const [first, second] = initial.groups[0];
+  const firstSelected = toggleGroupPick(initial, first.id);
+  const advanced = confirmGroupPick(firstSelected, [first.id, second.id]);
+
+  expect(advanced.history[0].groupPicks).toEqual([first.id]);
+  expect(saveTournament(advanced)).toBe(true);
+  expect(loadTournament()).toEqual(advanced);
+});
+
 it.each([
   ['invalid JSON', '{not-json'],
   ['the wrong version', JSON.stringify({ version: 0, state: vandalState() })],

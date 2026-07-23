@@ -4,10 +4,9 @@ import { SkinCard } from './SkinCard';
 interface GroupStageProps {
   readonly state: TournamentState;
   readonly onToggle: (skinId: string) => void;
-  readonly onConfirm: () => void;
 }
 
-export function GroupStage({ state, onToggle, onConfirm }: GroupStageProps) {
+export function GroupStage({ state, onToggle }: GroupStageProps) {
   const currentGroup = state.groups[state.groupIndex];
   const selectionFull = state.groupPicks.length === state.config.picksPerGroup;
 
@@ -22,7 +21,7 @@ export function GroupStage({ state, onToggle, onConfirm }: GroupStageProps) {
       <header className="stage__heading">
         <h1 id="group-heading">小组赛</h1>
         <p>第 {state.groupIndex + 1} / {state.groups.length} 组</p>
-        <p>选择 {state.config.picksPerGroup} 款晋级皮肤</p>
+        <p>选择 {state.config.picksPerGroup} 款，选满后自动晋级</p>
       </header>
       <div className="skin-grid">
         {currentGroup.map((skin) => (
@@ -34,14 +33,6 @@ export function GroupStage({ state, onToggle, onConfirm }: GroupStageProps) {
           />
         ))}
       </div>
-      <button
-        type="button"
-        className="primary-action"
-        disabled={!selectionFull}
-        onClick={onConfirm}
-      >
-        确认晋级
-      </button>
     </section>
   );
 }

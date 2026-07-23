@@ -64,6 +64,26 @@ export default function App() {
     return <WeaponSelect weapons={weaponOptions} onSelect={start} />;
   }
 
+  function selectGroupSkin(skinId: string) {
+    if (state === null || state.phase !== 'groups') return;
+
+    if (state.groupPicks.includes(skinId)) {
+      commit(toggleGroupPick(state, skinId));
+      return;
+    }
+
+    const selectedIds = [...state.groupPicks, skinId];
+    if (selectedIds.length > state.config.picksPerGroup) {
+      return;
+    }
+    if (selectedIds.length === state.config.picksPerGroup) {
+      commit(confirmGroupPick(state, selectedIds));
+      return;
+    }
+
+    commit(toggleGroupPick(state, skinId));
+  }
+
   const currentRound = state.bracket[state.roundIndex];
   const currentMatch = currentRound?.[state.matchIndex];
 
@@ -81,8 +101,7 @@ export default function App() {
         {state.phase === 'groups' && (
           <GroupStage
             state={state}
-            onToggle={(skinId) => commit(toggleGroupPick(state, skinId))}
-            onConfirm={() => commit(confirmGroupPick(state))}
+            onToggle={selectGroupSkin}
           />
         )}
         {state.phase === 'revival' && (

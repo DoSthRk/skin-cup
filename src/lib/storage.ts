@@ -273,11 +273,16 @@ function advanceToward(
         state.groups[state.groupIndex].map((skin) => skin.id),
       );
       const existingQualifierIds = new Set(state.qualifiers.map((skin) => skin.id));
-      const selectedIds = persistedGroupPicks.length > 0
-        ? persistedGroupPicks
-        : target.qualifierIds.filter(
-            (id) => currentGroupIds.has(id) && !existingQualifierIds.has(id),
-          );
+      const targetSelectedIds = target.qualifierIds.filter(
+        (id) => currentGroupIds.has(id) && !existingQualifierIds.has(id),
+      );
+      const selectedIds =
+        persistedGroupPicks.length === state.config.picksPerGroup
+          ? persistedGroupPicks
+          : targetSelectedIds;
+      if (persistedGroupPicks.some((id) => !selectedIds.includes(id))) {
+        return null;
+      }
       advanced = confirmGroupPick(state, selectedIds);
     } else if (state.phase === 'revival') {
       advanced = confirmWildcards(state, target.wildcardPicks);

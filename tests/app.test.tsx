@@ -120,16 +120,23 @@ it('starts the curated melee tournament with 32 groups', () => {
   expect(loadTournament()).toMatchObject({ weapon: 'melee', phase: 'groups' });
 });
 
-it('confirms exactly two group picks and clears selection for the next group', () => {
+it('automatically confirms a group after the second distinct pick', () => {
   render(<App />);
   fireEvent.click(screen.getByRole('button', { name: /正义.*24/ }));
 
   const firstState = loadTournament()!;
-  for (const skin of firstState.groups[0].slice(0, 2)) {
-    fireEvent.click(screen.getByRole('button', { name: `选择 ${skin.name}` }));
-  }
-  expect(screen.getByRole('button', { name: '确认晋级' })).toBeEnabled();
-  fireEvent.click(screen.getByRole('button', { name: '确认晋级' }));
+  const [first, second] = firstState.groups[0];
+  fireEvent.click(screen.getByRole('button', { name: `选择 ${first.name}` }));
+
+  expect(screen.getByText('第 1 / 6 组')).toBeInTheDocument();
+  expect(screen.getByText('选择 2 款，选满后自动晋级')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '确认晋级' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: `选择 ${first.name}` })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: `选择 ${second.name}` }));
 
   expect(screen.getByText('第 2 / 6 组')).toBeInTheDocument();
   for (const button of screen.getAllByRole('button', { name: /^选择 / })) {
@@ -146,7 +153,6 @@ it('moves from the final group into revival', () => {
   for (const skin of state.groups[state.groupIndex].slice(0, 2)) {
     fireEvent.click(screen.getByRole('button', { name: `选择 ${skin.name}` }));
   }
-  fireEvent.click(screen.getByRole('button', { name: '确认晋级' }));
 
   expect(screen.getByRole('heading', { name: '复活赛' })).toBeInTheDocument();
   expect(screen.getByText('从落选皮肤中选择 4 个复活名额')).toBeInTheDocument();
@@ -160,7 +166,6 @@ it('moves from the final melee group directly into the 1/32 final', () => {
   for (const skin of state.groups[state.groupIndex].slice(0, 2)) {
     fireEvent.click(screen.getByRole('button', { name: `选择 ${skin.name}` }));
   }
-  fireEvent.click(screen.getByRole('button', { name: '确认晋级' }));
 
   expect(screen.getByRole('heading', { name: '1/32 决赛' })).toBeInTheDocument();
   expect(screen.getByText('第 1 / 32 场')).toBeInTheDocument();
@@ -228,20 +233,29 @@ it('announces the next formal round after the final match of a round', () => {
   expect(loadTournament()).toMatchObject({ roundIndex: 1, matchIndex: 0 });
 });
 
-it('resumes valid progress and supports undo', () => {
-  const initial = createState('sheriff');
-  const progressed = confirmGroupPick(
-    initial,
-    initial.groups[0].slice(0, 2).map((skin) => skin.id),
-  );
-  saveTournament(progressed);
+it('undoes an automatic group advance with the first pick still selected', () => {
   render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: /正义.*24/ }));
+
+  const initial = loadTournament()!;
+  const [first, second] = initial.groups[0];
+  fireEvent.click(screen.getByRole('button', { name: `选择 ${first.name}` }));
+  fireEvent.click(screen.getByRole('button', { name: `选择 ${second.name}` }));
 
   expect(screen.getByText('第 2 / 6 组')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '撤销上一步' }));
   expect(screen.getByText('第 1 / 6 组')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '撤销上一步' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: `选择 ${first.name}` })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  expect(screen.getByRole('button', { name: `选择 ${second.name}` })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
   expect(loadTournament()?.groupIndex).toBe(0);
+  expect(loadTournament()?.groupPicks).toEqual([first.id]);
 });
 
 it('returns to the home screen and clears the current tournament', () => {
