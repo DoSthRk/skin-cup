@@ -551,6 +551,18 @@ strong {
     var(--ink-0);
 }
 
+.bracket-share-description {
+  margin-top: 0.55rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.bracket-share-preview {
+  max-height: 44rem;
+  aspect-ratio: 9 / 16;
+  object-fit: contain;
+}
+
 .share-status {
   min-height: 1.5rem;
   color: var(--muted);
@@ -605,6 +617,10 @@ strong {
 
   .share-actions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bracket-share-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { TournamentState } from '../domain/types';
+import { BracketSharePanel } from './BracketSharePanel';
 import {
   buildShareImage,
   deriveTournamentResult,
@@ -214,6 +215,8 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
           </button>
         </div>
       </section>
+
+      <BracketSharePanel key={resultKey} state={state} />
 
       <button type="button" className="primary-action play-again" onClick={onPlayAgain}>
         再来一场

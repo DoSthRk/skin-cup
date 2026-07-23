@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { StrictMode } from 'react';
 import { ChampionScreen } from '../src/components/ChampionScreen';
 import { skinCatalog } from '../src/data/generated-skin-catalog';
@@ -80,6 +86,12 @@ function completedVandalState(seed = 'completed-vandal-test'): TournamentState {
   }
 
   return state;
+}
+
+function championShareStatus(): HTMLElement {
+  return within(
+    screen.getByRole('region', { name: '保存你的冠军结果' }),
+  ).getByRole('status');
 }
 
 const context = {
@@ -393,13 +405,49 @@ it('shows the complete podium and gives explicit generation feedback', async () 
   );
 
   fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
-  expect(screen.getByRole('status')).toHaveTextContent('正在生成分享图');
-  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('分享图已生成'));
+  expect(championShareStatus()).toHaveTextContent('正在生成分享图');
+  await waitFor(() =>
+    expect(championShareStatus()).toHaveTextContent('分享图已生成'),
+  );
   expect(screen.getByRole('img', { name: '正义冠军分享图预览' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled();
 
   fireEvent.click(screen.getByRole('button', { name: '再来一场' }));
   expect(onPlayAgain).toHaveBeenCalledOnce();
+});
+
+it('generates, previews, and downloads the complete bracket independently', async () => {
+  render(
+    <ChampionScreen
+      state={completedSheriffState('bracket-panel')}
+      onPlayAgain={() => {}}
+    />,
+  );
+
+  const panel = screen.getByRole('region', {
+    name: '下载完整淘汰赛晋级图',
+  });
+  expect(
+    within(panel).getByText('包含淘汰赛每一轮、每一场对决和胜者'),
+  ).toBeInTheDocument();
+
+  fireEvent.click(within(panel).getByRole('button', { name: '生成晋级图' }));
+
+  await waitFor(() =>
+    expect(
+      within(panel).getByRole('img', { name: '正义完整晋级图预览' }),
+    ).toBeInTheDocument(),
+  );
+  expect(within(panel).getByRole('status')).toHaveTextContent('晋级图已生成');
+
+  fireEvent.click(within(panel).getByRole('button', { name: '下载晋级图' }));
+
+  expect(anchorClick).toHaveBeenCalledOnce();
+  expect(
+    document.body.querySelector(
+      'a[download="Skin-Cup-正义-完整晋级图.jpg"]',
+    ),
+  ).toBeInTheDocument();
 });
 
 it('invokes native sharing in the generated-image click without an intervening await', async () => {
@@ -428,7 +476,9 @@ it('invokes native sharing in the generated-image click without an intervening a
   inClick = false;
 
   expect(nativeShare).toHaveBeenCalledOnce();
-  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('已打开系统分享'));
+  await waitFor(() =>
+    expect(championShareStatus()).toHaveTextContent('已打开系统分享'),
+  );
 });
 
 it('ignores a hanging generation after a new completed tournament replaces it', async () => {
@@ -439,10 +489,12 @@ it('ignores a hanging generation after a new completed tournament replaces it', 
   const { rerender } = render(<ChampionScreen state={first} onPlayAgain={() => {}} />);
 
   fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
-  expect(screen.getByRole('status')).toHaveTextContent('正在生成分享图');
+  expect(championShareStatus()).toHaveTextContent('正在生成分享图');
   rerender(<ChampionScreen state={second} onPlayAgain={() => {}} />);
 
-  expect(screen.getByRole('status')).toHaveTextContent('先生成分享图，再使用系统分享');
+  expect(championShareStatus()).toHaveTextContent(
+    '先生成分享图，再使用系统分享',
+  );
   expect(screen.getByRole('button', { name: '生成分享图' })).toBeEnabled();
   await vi.advanceTimersByTimeAsync(SHARE_IMAGE_TIMEOUT_MS);
   expect(screen.queryByRole('img', { name: '正义冠军分享图预览' })).not.toBeInTheDocument();
@@ -471,7 +523,9 @@ it('still publishes the current generation result under React StrictMode', async
 
   fireEvent.click(screen.getByRole('button', { name: '生成分享图' }));
 
-  await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('分享图已生成'));
+  await waitFor(() =>
+    expect(championShareStatus()).toHaveTextContent('分享图已生成'),
+  );
   expect(screen.getByRole('button', { name: '系统分享' })).toBeEnabled();
 });
 
