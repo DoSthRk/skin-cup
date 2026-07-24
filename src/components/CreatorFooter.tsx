@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import type { FocusEvent, KeyboardEvent } from 'react';
 
+const CREATOR_NAME = 'DoSthRk';
+
 export function CreatorFooter() {
   const [open, setOpen] = useState(false);
   const pointerInteractionRef = useRef(false);
@@ -39,7 +41,7 @@ export function CreatorFooter() {
         <button
           type="button"
           className="creator-trigger"
-          aria-label="查看作者 Clint 的个人信息"
+          aria-label={`查看作者 ${CREATOR_NAME} 的个人信息`}
           aria-expanded={open}
           aria-controls="creator-profile-card"
           onPointerDown={() => {
@@ -60,7 +62,7 @@ export function CreatorFooter() {
           />
           <span>
             <small>MADE BY</small>
-            <strong>Clint</strong>
+            <strong>{CREATOR_NAME}</strong>
           </span>
         </button>
 
@@ -69,13 +71,13 @@ export function CreatorFooter() {
             id="creator-profile-card"
             className="creator-card"
             role="region"
-            aria-label="作者 Clint 的个人信息"
+            aria-label={`作者 ${CREATOR_NAME} 的个人信息`}
           >
             <header className="creator-card__header">
-              <img src="/creator/clint-avatar.png" alt="Clint 的头像" />
+              <img src="/creator/clint-avatar.png" alt={`${CREATOR_NAME} 的头像`} />
               <div>
                 <span>CREATOR</span>
-                <strong>Clint</strong>
+                <strong>{CREATOR_NAME}</strong>
                 <small>VALORANT-CUP 作者</small>
               </div>
             </header>
@@ -92,7 +94,7 @@ export function CreatorFooter() {
             <figure className="creator-wechat">
               <img
                 src="/creator/clint-wechat.jpg"
-                alt="Clint 的微信二维码"
+                alt={`${CREATOR_NAME} 的微信二维码`}
               />
               <figcaption>微信联系</figcaption>
             </figure>

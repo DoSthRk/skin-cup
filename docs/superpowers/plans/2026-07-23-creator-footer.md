@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a responsive author footer with Clint's avatar, GitHub profile, and WeChat QR card to every app screen.
+**Goal:** Add a responsive author footer with DoSthRk's avatar, GitHub profile, and WeChat QR card to every app screen.
 
 **Architecture:** A focused `CreatorFooter` React component owns its open state and pointer/focus/keyboard interactions. `App` mounts it in both its home and tournament layouts, while CSS positions the profile card above the footer and keeps it within the mobile viewport.
 
@@ -18,7 +18,7 @@
 
 - [ ] **Step 1: Write the failing component tests**
 
-Test that the component renders `MADE BY`, `Clint`, the avatar, a GitHub link with `href="https://github.com/DoSthRk"`, and the WeChat QR image. Assert the trigger starts with `aria-expanded="false"`, becomes true after a click, and returns to false after Escape.
+Test that the component renders `MADE BY`, `DoSthRk`, the avatar, a GitHub link with `href="https://github.com/DoSthRk"`, and the WeChat QR image. Assert the trigger starts with `aria-expanded="false"`, becomes true after a click, and returns to false after Escape.
 
 - [ ] **Step 2: Run the focused test and verify RED**
 
@@ -63,7 +63,7 @@ Expected: all creator footer tests pass.
 
 - [ ] **Step 1: Write failing integration assertions**
 
-In the home test, assert `screen.getByText('MADE BY')` and the Clint trigger are present. In the fresh tournament test, assert the same trigger remains present after selecting a weapon.
+In the home test, assert `screen.getByText('MADE BY')` and the DoSthRk trigger are present. In the fresh tournament test, assert the same trigger remains present after selecting a weapon.
 
 - [ ] **Step 2: Run the focused app tests and verify RED**
 
