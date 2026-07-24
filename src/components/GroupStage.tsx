@@ -17,13 +17,13 @@ export function GroupStage({ state, onToggle }: GroupStageProps) {
   }
 
   return (
-    <section className="stage" aria-labelledby="group-heading">
+    <section className="stage stage--group" aria-labelledby="group-heading">
       <header className="stage__heading">
         <h1 id="group-heading">小组赛</h1>
         <p>第 {state.groupIndex + 1} / {state.groups.length} 组</p>
         <p>选择 {state.config.picksPerGroup} 款，选满后自动晋级</p>
       </header>
-      <div className="skin-grid">
+      <div className="skin-grid skin-grid--group">
         {currentGroup.map((skin) => (
           <SkinCard
             key={skin.id}

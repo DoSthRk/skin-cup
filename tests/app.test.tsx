@@ -110,6 +110,9 @@ it('starts a fresh tournament for the chosen weapon', () => {
 
   expect(screen.getByRole('heading', { name: '小组赛' })).toBeInTheDocument();
   expect(screen.getByText('第 1 / 6 组')).toBeInTheDocument();
+  const groupStage = screen.getByRole('region', { name: '小组赛' });
+  expect(groupStage).toHaveClass('stage--group');
+  expect(groupStage.querySelector('.skin-grid')).toHaveClass('skin-grid--group');
   expect(
     screen.getByRole('button', { name: '查看作者 Clint 的个人信息' }),
   ).toBeInTheDocument();

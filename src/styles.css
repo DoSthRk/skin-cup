@@ -989,6 +989,87 @@ strong {
   .top-bar nav button {
     flex: 1;
   }
+
+  .stage--group {
+    gap: 0.75rem;
+  }
+
+  .stage--group .stage__heading {
+    gap: 0.2rem;
+    padding: 0.25rem 0;
+  }
+
+  .stage--group .stage__heading h1 {
+    font-size: clamp(1.75rem, 8vw, 2.2rem);
+    line-height: 1;
+  }
+
+  .stage--group .stage__heading p {
+    font-size: 0.78rem;
+    line-height: 1.25;
+  }
+
+  .skin-grid--group {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .skin-grid--group .skin-card {
+    grid-template-columns: 6.25rem minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    min-height: 5.75rem;
+    column-gap: 0.6rem;
+    row-gap: 0.2rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .skin-grid--group .skin-card__visual {
+    grid-row: 1 / -1;
+    grid-column: 1;
+    min-height: 4rem;
+    height: 4rem;
+    align-self: center;
+  }
+
+  .skin-grid--group .skin-card img {
+    height: 4rem;
+  }
+
+  .skin-grid--group .skin-card__placeholder {
+    min-height: 4rem;
+  }
+
+  .skin-grid--group .skin-card > strong,
+  .skin-grid--group .skin-card__tier,
+  .skin-grid--group .skin-card__effects {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .skin-grid--group .skin-card > strong {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.82rem;
+    line-height: 1.15;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .skin-grid--group .skin-card__tier {
+    font-size: 0.68rem;
+    line-height: 1.1;
+  }
+
+  .skin-grid--group .skin-card__effects {
+    align-content: start;
+    gap: 0.18rem;
+  }
+
+  .skin-grid--group .skin-card__effects span {
+    padding: 0.1rem 0.3rem;
+    font-size: 0.6rem;
+    line-height: 1.1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
