@@ -24,12 +24,12 @@ export function RevivalStage({ candidates, wildcardCount, onConfirm }: RevivalSt
   }
 
   return (
-    <section className="stage" aria-labelledby="revival-heading">
+    <section className="stage stage--revival" aria-labelledby="revival-heading">
       <header className="stage__heading">
         <h1 id="revival-heading">复活赛</h1>
         <p>从落选皮肤中选择 {wildcardCount} 个复活名额</p>
       </header>
-      <div className="skin-grid">
+      <div className="skin-grid skin-grid--revival">
         {candidates.map((skin) => (
           <SkinCard
             key={skin.id}

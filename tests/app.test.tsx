@@ -166,6 +166,9 @@ it('moves from the final group into revival', () => {
 
   expect(screen.getByRole('heading', { name: '复活赛' })).toBeInTheDocument();
   expect(screen.getByText('从落选皮肤中选择 4 个复活名额')).toBeInTheDocument();
+  const revivalStage = screen.getByRole('region', { name: '复活赛' });
+  expect(revivalStage).toHaveClass('stage--revival');
+  expect(revivalStage.querySelector('.skin-grid')).toHaveClass('skin-grid--revival');
 });
 
 it('moves from the final melee group directly into the 1/32 final', () => {
