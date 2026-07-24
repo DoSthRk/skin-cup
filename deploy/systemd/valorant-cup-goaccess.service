@@ -1,0 +1,16 @@
+[Unit]
+Description=Generate the VALORANT-CUP GoAccess traffic report
+Documentation=https://goaccess.io/man
+After=nginx.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+ExecStart=/usr/local/lib/valorant-cup/generate-goaccess-report.sh
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths=/var/log/nginx
+ReadWritePaths=/var/www/valorant-cup-analytics

@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh the VALORANT-CUP traffic report every five minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Persistent=true
+Unit=valorant-cup-goaccess.service
+
+[Install]
+WantedBy=timers.target

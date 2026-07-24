@@ -116,6 +116,12 @@ skin-cup/
 
 发布前运行 `npm run sync:skins`、`npm test -- --run` 和 `npm run build`。该站点与服务器上的 TURNS 内部项目使用不同目录、Nginx server block 和运行方式，发布时不得修改 TURNS 的 Java 进程或 `8080` 端口。
 
+## 流量统计
+
+生产环境使用 GoAccess 读取 VALORANT-CUP 独立的 Nginx 访问日志，并每五分钟重新生成一次静态统计报告。后台入口为 `https://valorant-cup.dosthrk.com/traffic`，由 Nginx Basic Auth 保护且禁止搜索引擎索引；后台自身请求写入另一份日志，不会污染主站统计。
+
+相关部署文件位于 `deploy/goaccess/`、`deploy/systemd/` 和 `deploy/nginx/valorant-cup.conf`。统计任务只读 `/var/log/nginx/valorant-cup.access.log` 及轮转日志，只写 `/var/www/valorant-cup-analytics`，不读取或修改 TURNS 的目录、进程与端口。
+
 ## 资源来源与免责声明
 
 皮肤名称、品级及图片地址来自 Valorant-API 汇总的公开游戏数据；该服务及其数据可用性不由本项目控制。无畏契约、VALORANT、Riot Games 及相关名称、商标和游戏素材归其各自权利人所有。
