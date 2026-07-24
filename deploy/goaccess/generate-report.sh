@@ -2,6 +2,8 @@
 set -eu
 
 umask 027
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
 
 log_file=/var/log/nginx/valorant-cup.access.log
 report_dir=/var/www/valorant-cup-analytics

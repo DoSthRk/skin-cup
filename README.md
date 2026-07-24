@@ -118,7 +118,7 @@ skin-cup/
 
 ## 流量统计
 
-生产环境使用 GoAccess 读取 VALORANT-CUP 独立的 Nginx 访问日志，并每五分钟重新生成一次静态统计报告。后台入口为 `https://valorant-cup.dosthrk.com/traffic`，由 Nginx Basic Auth 保护且禁止搜索引擎索引；后台自身请求写入另一份日志，不会污染主站统计。
+生产环境使用 GoAccess 读取 VALORANT-CUP 独立的 Nginx 访问日志，并每五分钟重新生成一次简体中文静态统计报告。后台入口为 `https://valorant-cup.dosthrk.com/traffic`，由 Nginx Basic Auth 保护且禁止搜索引擎索引；后台自身请求写入另一份日志，不会污染主站统计。服务器需生成 `zh_CN.UTF-8` locale，报告任务只在自身进程内使用该语言环境，不改变系统默认语言。
 
 相关部署文件位于 `deploy/goaccess/`、`deploy/systemd/` 和 `deploy/nginx/valorant-cup.conf`。统计任务只读 `/var/log/nginx/valorant-cup.access.log` 及轮转日志，只写 `/var/www/valorant-cup-analytics`，不读取或修改 TURNS 的目录、进程与端口。
 
