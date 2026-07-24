@@ -19,7 +19,11 @@ export interface TournamentResult {
   readonly path: readonly ChampionPathStep[];
 }
 
-export type ShareImageOutcome = 'shared' | 'downloaded' | 'cancelled';
+export type ShareImageOutcome =
+  | 'shared'
+  | 'downloaded'
+  | 'cancelled'
+  | 'preview';
 
 export interface ShareImageMetadata {
   readonly title: string;
@@ -29,14 +33,16 @@ export interface ShareImageMetadata {
 export const SHARE_IMAGE_TIMEOUT_MS = 8_000;
 export const DOWNLOAD_CLEANUP_DELAY_MS = 1_000;
 export const BRACKET_IMAGE_WIDTH = 1_440;
+export const BRAND_QR_IMAGE_URL = '/share/valorant-cup-qr.png';
 
 const BRACKET_TREE_TOP = 390;
-const BRACKET_TREE_FOOTER = 260;
+const BRACKET_TREE_FOOTER = 500;
 const BRACKET_CARD_WIDTH = 200;
 const BRACKET_CARD_HEIGHT = 58;
 const BRACKET_SIDE_MARGIN = 34;
 const BRACKET_CHAMPION_WIDTH = 340;
 const BRACKET_CHAMPION_HEIGHT = 210;
+const BRAND_FOOTER_HEIGHT = 240;
 
 type BracketSide = 'left' | 'right';
 
@@ -160,6 +166,53 @@ function fitImage(
     drawWidth,
     drawHeight,
   );
+}
+
+function drawBrandFooter(
+  context: CanvasRenderingContext2D,
+  qrImage: HTMLImageElement | null,
+  canvasWidth: number,
+  top: number,
+): void {
+  const contentWidth = Math.min(760, canvasWidth - 144);
+  const startX = (canvasWidth - contentWidth) / 2;
+  const qrSize = 164;
+  const qrX = startX;
+  const qrY = top + 38;
+  const copyX = qrX + qrSize + 44;
+
+  context.fillStyle = '#06080b';
+  context.fillRect(0, top, canvasWidth, BRAND_FOOTER_HEIGHT);
+  context.fillStyle = '#ff4655';
+  context.fillRect(startX, top, contentWidth, 4);
+
+  context.fillStyle = '#ffffff';
+  context.fillRect(qrX, qrY, qrSize, qrSize);
+  if (qrImage) {
+    fitImage(context, qrImage, qrX + 8, qrY + 8, qrSize - 16, qrSize - 16);
+  } else {
+    context.fillStyle = '#7ee9ee';
+    context.fillRect(qrX + 14, qrY + 14, qrSize - 28, 4);
+    context.fillRect(qrX + 14, qrY + qrSize - 18, qrSize - 28, 4);
+    context.fillRect(qrX + 14, qrY + 14, 4, qrSize - 28);
+    context.fillRect(qrX + qrSize - 18, qrY + 14, 4, qrSize - 28);
+    context.fillStyle = '#263238';
+    context.textAlign = 'center';
+    context.font = '800 20px system-ui, sans-serif';
+    context.fillText('SCAN', qrX + qrSize / 2, qrY + qrSize / 2 + 7);
+  }
+
+  context.textAlign = 'left';
+  context.textBaseline = 'alphabetic';
+  context.fillStyle = '#ff4655';
+  context.font = '950 36px system-ui, sans-serif';
+  context.fillText('VALORANT CUP', copyX, top + 79);
+  context.fillStyle = '#f6f3ef';
+  context.font = '750 24px system-ui, sans-serif';
+  context.fillText('给你的本命皮肤办一场世界杯', copyX, top + 123);
+  context.fillStyle = '#7ee9ee';
+  context.font = '650 20px system-ui, sans-serif';
+  context.fillText('valorant-cup.dosthrk.com', copyX, top + 164);
 }
 
 function drawWrappedText(
@@ -291,7 +344,7 @@ export async function buildShareImage(state: TournamentState): Promise<Blob> {
   const result = deriveTournamentResult(state);
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
-  canvas.height = 1350;
+  canvas.height = 1570;
   const context = canvas.getContext('2d');
   if (!context) {
     throw new Error('当前浏览器不支持生成分享图片');
@@ -326,9 +379,12 @@ export async function buildShareImage(state: TournamentState): Promise<Blob> {
     { label: '季军', skin: result.thirdPlace, accent: '#f4c85a' },
     { label: '殿军', skin: result.fourthPlace, accent: '#9aa8ac' },
   ] as const;
-  const rankingImages = await Promise.all(
-    ranking.map(({ skin }) => loadImage(skin.fullRender ?? skin.image)),
-  );
+  const [rankingImages, brandQrImage] = await Promise.all([
+    Promise.all(
+      ranking.map(({ skin }) => loadImage(skin.fullRender ?? skin.image)),
+    ),
+    loadImage(BRAND_QR_IMAGE_URL),
+  ]);
   const championImage = rankingImages[0];
   if (championImage) {
     fitImage(context, championImage, 100, 310, 880, 400);
@@ -367,11 +423,12 @@ export async function buildShareImage(state: TournamentState): Promise<Blob> {
     );
   });
 
-  context.fillStyle = '#ff4655';
-  context.fillRect(72, 1282, 936, 4);
-  context.fillStyle = '#809195';
-  context.font = '500 20px system-ui, sans-serif';
-  context.fillText('由 Skin Cup 本地赛事生成', 72, 1322);
+  drawBrandFooter(
+    context,
+    brandQrImage,
+    canvas.width,
+    canvas.height - BRAND_FOOTER_HEIGHT,
+  );
 
   return canvasToJpeg(canvas);
 }
@@ -618,7 +675,7 @@ export async function buildBracketImage(
   const leftTree = buildBracketTreeSide(rounds, 'left', leafGap);
   const rightTree = buildBracketTreeSide(rounds, 'right', leafGap);
   const entrants = rounds[0].matches.flatMap((match) => [...match.skins]);
-  const [championImage, thumbnailEntries] = await Promise.all([
+  const [championImage, thumbnailEntries, brandQrImage] = await Promise.all([
     loadImage(champion.fullRender ?? champion.image),
     Promise.all(
       entrants.map(
@@ -626,6 +683,7 @@ export async function buildBracketImage(
           [skin.id, await loadImage(skin.image)] as const,
       ),
     ),
+    loadImage(BRAND_QR_IMAGE_URL),
   ]);
   const thumbnails = new Map(thumbnailEntries);
   const championCenterY =
@@ -783,15 +841,11 @@ export async function buildBracketImage(
     championY + BRACKET_CHAMPION_HEIGHT + 145,
   );
 
-  context.fillStyle = '#ff4655';
-  context.fillRect(72, canvas.height - 82, canvas.width - 144, 4);
-  context.textAlign = 'left';
-  context.font = '500 20px system-ui, sans-serif';
-  context.fillStyle = '#809195';
-  context.fillText(
-    `由 Skin Cup 生成 · valorant-cup.dosthrk.com`,
-    72,
-    canvas.height - 40,
+  drawBrandFooter(
+    context,
+    brandQrImage,
+    canvas.width,
+    canvas.height - BRAND_FOOTER_HEIGHT,
   );
 
   return canvasToJpeg(canvas);
@@ -818,6 +872,85 @@ function isAbortError(error: unknown): boolean {
     : typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError';
 }
 
+function isMobileBrowser(): boolean {
+  return typeof navigator !== 'undefined'
+    && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+export function isWeChatBrowser(): boolean {
+  return typeof navigator !== 'undefined'
+    && /MicroMessenger/i.test(navigator.userAgent);
+}
+
+function createShareData(
+  blob: Blob,
+  filename: string,
+  metadata: ShareImageMetadata,
+): ShareData {
+  return {
+    title: metadata.title,
+    text: metadata.text,
+    files: [new File([blob], filename, { type: 'image/jpeg' })],
+  };
+}
+
+function canShareImage(shareData: ShareData): boolean {
+  if (
+    typeof navigator === 'undefined'
+    || typeof navigator.share !== 'function'
+    || typeof navigator.canShare !== 'function'
+  ) {
+    return false;
+  }
+
+  try {
+    return navigator.canShare(shareData);
+  } catch {
+    return false;
+  }
+}
+
+async function shareImageNatively(
+  shareData: ShareData,
+): Promise<'shared' | 'cancelled' | 'unsupported' | 'failed'> {
+  if (!canShareImage(shareData)) {
+    return 'unsupported';
+  }
+
+  try {
+    await navigator.share(shareData);
+    return 'shared';
+  } catch (error) {
+    return isAbortError(error) ? 'cancelled' : 'failed';
+  }
+}
+
+function shouldUseImagePreview(): boolean {
+  return isWeChatBrowser() || isMobileBrowser();
+}
+
+export async function saveShareImage(
+  blob: Blob,
+  filename: string,
+): Promise<ShareImageOutcome> {
+  if (!isMobileBrowser() && !isWeChatBrowser()) {
+    downloadShareImage(blob, filename);
+    return 'downloaded';
+  }
+
+  const nativeOutcome = await shareImageNatively(
+    createShareData(blob, filename, {
+      title: 'VALORANT CUP 分享图',
+      text: '保存这张图片到手机相册。',
+    }),
+  );
+  if (nativeOutcome === 'shared' || nativeOutcome === 'cancelled') {
+    return nativeOutcome;
+  }
+
+  return 'preview';
+}
+
 export async function shareShareImage(
   blob: Blob,
   filename: string,
@@ -826,26 +959,20 @@ export async function shareShareImage(
     text: '这是我选出的皮肤冠军。',
   },
 ): Promise<ShareImageOutcome> {
-  const file = new File([blob], filename, { type: 'image/jpeg' });
-  const shareData: ShareData = {
-    title: metadata.title,
-    text: metadata.text,
-    files: [file],
-  };
+  const nativeOutcome = await shareImageNatively(
+    createShareData(blob, filename, metadata),
+  );
+  if (nativeOutcome === 'shared' || nativeOutcome === 'cancelled') {
+    return nativeOutcome;
+  }
+  if (shouldUseImagePreview()) {
+    return 'preview';
+  }
 
-  if (typeof navigator.share !== 'function' || !navigator.canShare?.(shareData)) {
+  if (nativeOutcome === 'unsupported' || nativeOutcome === 'failed') {
     downloadShareImage(blob, filename);
     return 'downloaded';
   }
 
-  try {
-    await navigator.share(shareData);
-    return 'shared';
-  } catch (error) {
-    if (isAbortError(error)) {
-      return 'cancelled';
-    }
-    downloadShareImage(blob, filename);
-    return 'downloaded';
-  }
+  return 'downloaded';
 }

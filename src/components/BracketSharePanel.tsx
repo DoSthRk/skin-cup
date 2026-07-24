@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { TournamentState } from '../domain/types';
 import {
   buildBracketImage,
-  downloadShareImage,
+  saveShareImage,
   shareShareImage,
 } from '../lib/share';
+import { ShareImagePreview } from './ShareImagePreview';
 
 interface BracketSharePanelProps {
   readonly state: TournamentState;
@@ -18,6 +19,7 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
   const [generationState, setGenerationState] =
     useState<GenerationState>('generating');
   const [message, setMessage] = useState('正在生成完整晋级图…');
+  const [previewMode, setPreviewMode] = useState<'save' | 'share' | null>(null);
   const mountedRef = useRef(true);
   const requestTokenRef = useRef(0);
   const previewUrlRef = useRef<string | null>(null);
@@ -74,11 +76,26 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
     }
   }
 
-  async function download(): Promise<void> {
-    const blob = bracketBlob ?? (await generate());
-    if (!blob) return;
-    downloadShareImage(blob, filename);
-    setMessage('晋级图已下载');
+  function download(): void {
+    if (!bracketBlob) return;
+    const requestToken = requestTokenRef.current;
+    void saveShareImage(bracketBlob, filename).then((outcome) => {
+      if (!mountedRef.current || requestToken !== requestTokenRef.current) {
+        return;
+      }
+      if (outcome === 'preview') {
+        setPreviewMode('save');
+      }
+      setMessage(
+        outcome === 'shared'
+          ? '已打开系统图片操作，可选择保存到相册'
+          : outcome === 'cancelled'
+            ? '已取消系统图片操作'
+            : outcome === 'preview'
+              ? '已打开高清原图，请长按保存'
+              : '晋级图已下载',
+      );
+    });
   }
 
   function share(): void {
@@ -91,12 +108,17 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
       if (!mountedRef.current || requestToken !== requestTokenRef.current) {
         return;
       }
+      if (outcome === 'preview') {
+        setPreviewMode('share');
+      }
       setMessage(
         outcome === 'shared'
           ? '已打开系统分享'
           : outcome === 'cancelled'
             ? '已取消系统分享'
-            : '当前设备无法分享，已改为下载',
+            : outcome === 'preview'
+              ? '已打开高清原图，请长按或使用微信菜单分享'
+              : '当前设备无法分享，已改为下载',
       );
     });
   }
@@ -138,8 +160,8 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
       <div className="share-actions bracket-share-actions">
         <button
           type="button"
-          onClick={() => void download()}
-          disabled={generationState === 'generating'}
+          onClick={download}
+          disabled={!bracketBlob || generationState === 'generating'}
         >
           下载晋级图
         </button>
@@ -152,6 +174,15 @@ export function BracketSharePanel({ state }: BracketSharePanelProps) {
           分享晋级图
         </button>
       </div>
+      {previewMode && previewUrl && (
+        <ShareImagePreview
+          filename={filename}
+          imageLabel="晋级图"
+          mode={previewMode}
+          onClose={() => setPreviewMode(null)}
+          src={previewUrl}
+        />
+      )}
     </section>
   );
 }

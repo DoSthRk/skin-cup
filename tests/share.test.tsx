@@ -17,6 +17,7 @@ import {
   DOWNLOAD_CLEANUP_DELAY_MS,
   deriveTournamentResult,
   downloadShareImage,
+  saveShareImage,
   SHARE_IMAGE_TIMEOUT_MS,
   shareShareImage,
 } from '../src/lib/share';
@@ -194,6 +195,10 @@ beforeEach(() => {
     configurable: true,
     value: undefined,
   });
+  Object.defineProperty(navigator, 'userAgent', {
+    configurable: true,
+    value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+  });
 });
 
 afterEach(() => {
@@ -281,6 +286,27 @@ it('creates a JPEG canvas at quality 0.92 with an anonymous remote image', async
   expect(context.drawImage).toHaveBeenCalled();
 });
 
+it('adds the fixed QR brand footer to the champion image', async () => {
+  await buildShareImage(completedSheriffState());
+
+  expect(exportedCanvasSizes.at(-1)).toEqual({ width: 1080, height: 1570 });
+  expect(loadedImages).toContainEqual({
+    crossOrigin: 'anonymous',
+    src: '/share/valorant-cup-qr.png',
+  });
+  for (const text of [
+    'VALORANT CUP',
+    '给你的本命皮肤办一场世界杯',
+    'valorant-cup.dosthrk.com',
+  ]) {
+    expect(context.fillText).toHaveBeenCalledWith(
+      text,
+      expect.any(Number),
+      expect.any(Number),
+    );
+  }
+});
+
 it('draws a portrait, mirrored knockout tree that converges on the champion', async () => {
   const state = completedSheriffState();
 
@@ -317,6 +343,27 @@ it('draws a portrait, mirrored knockout tree that converges on the champion', as
     ),
   );
   expect(context.stroke).toHaveBeenCalled();
+});
+
+it('adds the fixed QR brand footer to the complete bracket image', async () => {
+  await buildBracketImage(completedSheriffState());
+
+  expect(exportedCanvasSizes.at(-1)?.height).toBe(2255);
+  expect(loadedImages).toContainEqual({
+    crossOrigin: 'anonymous',
+    src: '/share/valorant-cup-qr.png',
+  });
+  for (const text of [
+    'VALORANT CUP',
+    '给你的本命皮肤办一场世界杯',
+    'valorant-cup.dosthrk.com',
+  ]) {
+    expect(context.fillText).toHaveBeenCalledWith(
+      text,
+      expect.any(Number),
+      expect.any(Number),
+    );
+  }
 });
 
 it('makes a 32-entry bracket image taller than a 16-entry bracket image', async () => {
@@ -414,6 +461,30 @@ it('uses native file sharing when supported', async () => {
   expect(anchorClick).not.toHaveBeenCalled();
 });
 
+it('uses native file sharing for mobile save when the platform supports image files', async () => {
+  const nativeShare = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'userAgent', {
+    configurable: true,
+    value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)',
+  });
+  Object.defineProperty(navigator, 'canShare', {
+    configurable: true,
+    value: vi.fn(() => true),
+  });
+  Object.defineProperty(navigator, 'share', {
+    configurable: true,
+    value: nativeShare,
+  });
+
+  await expect(
+    saveShareImage(new Blob(['skin-cup'], { type: 'image/jpeg' }), '冠军.jpg'),
+  ).resolves.toBe('shared');
+  expect(nativeShare).toHaveBeenCalledWith(
+    expect.objectContaining({ files: [expect.any(File)] }),
+  );
+  expect(anchorClick).not.toHaveBeenCalled();
+});
+
 it('uses the supplied title and text when sharing a bracket image', async () => {
   const nativeShare = vi.fn().mockResolvedValue(undefined);
   Object.defineProperty(navigator, 'canShare', {
@@ -461,6 +532,19 @@ it('falls back to download when native sharing is unsupported or fails', async (
 
   await expect(shareShareImage(blob, '冠军.jpg')).resolves.toBe('downloaded');
   expect(anchorClick).toHaveBeenCalledTimes(2);
+});
+
+it('opens an original-image preview instead of forcing a download inside WeChat', async () => {
+  Object.defineProperty(navigator, 'userAgent', {
+    configurable: true,
+    value:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) MicroMessenger/8.0.50',
+  });
+  const blob = new Blob(['skin-cup'], { type: 'image/jpeg' });
+
+  await expect(shareShareImage(blob, '冠军.jpg')).resolves.toBe('preview');
+  await expect(saveShareImage(blob, '冠军.jpg')).resolves.toBe('preview');
+  expect(anchorClick).not.toHaveBeenCalled();
 });
 
 it('does not force a download when the user cancels native sharing', async () => {
@@ -597,6 +681,57 @@ it('invokes native sharing from the prepared champion image without an interveni
   await waitFor(() =>
     expect(championShareStatus()).toHaveTextContent('已打开系统分享'),
   );
+});
+
+it('shows a long-press original image fallback for save and share inside WeChat', async () => {
+  Object.defineProperty(navigator, 'userAgent', {
+    configurable: true,
+    value:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) MicroMessenger/8.0.50',
+  });
+  render(<ChampionScreen state={completedSheriffState()} onPlayAgain={() => {}} />);
+
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: '分享冠军图' })).toBeEnabled(),
+  );
+
+  fireEvent.click(screen.getByRole('button', { name: '分享冠军图' }));
+
+  const shareDialog = await screen.findByRole('dialog', { name: '分享冠军图' });
+  expect(
+    within(shareDialog).getByText('长按图片发送给朋友，或点击微信右上角分享'),
+  ).toBeInTheDocument();
+  expect(
+    within(shareDialog).getByRole('img', { name: '可长按分享的冠军图原图' }),
+  ).toHaveAttribute('src', 'blob:skin-cup');
+  expect(anchorClick).not.toHaveBeenCalled();
+
+  fireEvent.click(within(shareDialog).getByRole('button', { name: '关闭原图' }));
+  fireEvent.click(screen.getByRole('button', { name: '下载冠军图' }));
+
+  const saveDialog = await screen.findByRole('dialog', { name: '保存冠军图' });
+  expect(
+    within(saveDialog).getByText('长按图片，选择“保存图片”即可存入手机相册'),
+  ).toBeInTheDocument();
+  expect(anchorClick).not.toHaveBeenCalled();
+
+  fireEvent.click(within(saveDialog).getByRole('button', { name: '关闭原图' }));
+  const bracketPanel = screen.getByRole('region', {
+    name: '下载完整淘汰赛晋级图',
+  });
+  fireEvent.click(
+    within(bracketPanel).getByRole('button', { name: '分享晋级图' }),
+  );
+
+  const bracketDialog = await screen.findByRole('dialog', {
+    name: '分享晋级图',
+  });
+  expect(
+    within(bracketDialog).getByRole('img', {
+      name: '可长按分享的晋级图原图',
+    }),
+  ).toHaveAttribute('src', 'blob:skin-cup');
+  expect(anchorClick).not.toHaveBeenCalled();
 });
 
 it('ignores a hanging generation after a new completed tournament replaces it', async () => {

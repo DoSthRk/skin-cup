@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { TournamentState } from '../domain/types';
 import { BracketSharePanel } from './BracketSharePanel';
+import { ShareImagePreview } from './ShareImagePreview';
 import {
   buildShareImage,
   deriveTournamentResult,
-  downloadShareImage,
+  saveShareImage,
   shareShareImage,
 } from '../lib/share';
 
@@ -23,6 +24,7 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
   const [generationState, setGenerationState] =
     useState<GenerationState>('generating');
   const [message, setMessage] = useState('正在生成分享图…');
+  const [previewMode, setPreviewMode] = useState<'save' | 'share' | null>(null);
   const mountedRef = useRef(true);
   const requestTokenRef = useRef(0);
   const previewUrlRef = useRef<string | null>(null);
@@ -88,15 +90,24 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
     }
   }
 
-  async function ensureShareBlob(): Promise<Blob | null> {
-    return shareBlob ?? generate();
-  }
-
-  async function download(): Promise<void> {
-    const blob = await ensureShareBlob();
-    if (!blob) return;
-    downloadShareImage(blob, filename);
-    setMessage('分享图已下载');
+  function download(): void {
+    if (!shareBlob) return;
+    const requestToken = requestTokenRef.current;
+    void saveShareImage(shareBlob, filename).then((outcome) => {
+      if (!mountedRef.current || requestToken !== requestTokenRef.current) return;
+      if (outcome === 'preview') {
+        setPreviewMode('save');
+      }
+      setMessage(
+        outcome === 'shared'
+          ? '已打开系统图片操作，可选择保存到相册'
+          : outcome === 'cancelled'
+            ? '已取消系统图片操作'
+            : outcome === 'preview'
+              ? '已打开高清原图，请长按保存'
+              : '分享图已下载',
+      );
+    });
   }
 
   function share(): void {
@@ -104,12 +115,17 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
     const requestToken = requestTokenRef.current;
     void shareShareImage(shareBlob, filename).then((outcome) => {
       if (!mountedRef.current || requestToken !== requestTokenRef.current) return;
+      if (outcome === 'preview') {
+        setPreviewMode('share');
+      }
       setMessage(
         outcome === 'shared'
           ? '已打开系统分享'
           : outcome === 'cancelled'
             ? '已取消系统分享'
-            : '当前设备无法分享，已改为下载',
+            : outcome === 'preview'
+              ? '已打开高清原图，请长按或使用微信菜单分享'
+              : '当前设备无法分享，已改为下载',
       );
     });
   }
@@ -173,7 +189,11 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
           {message}
         </p>
         <div className="share-actions">
-          <button type="button" onClick={() => void download()} disabled={generationState === 'generating'}>
+          <button
+            type="button"
+            onClick={download}
+            disabled={!shareBlob || generationState === 'generating'}
+          >
             下载冠军图
           </button>
           <button
@@ -192,6 +212,16 @@ export function ChampionScreen({ state, onPlayAgain }: ChampionScreenProps) {
       <button type="button" className="primary-action play-again" onClick={onPlayAgain}>
         再来一场
       </button>
+
+      {previewMode && previewUrl && (
+        <ShareImagePreview
+          filename={filename}
+          imageLabel="冠军图"
+          mode={previewMode}
+          onClose={() => setPreviewMode(null)}
+          src={previewUrl}
+        />
+      )}
     </section>
   );
 }
